@@ -1,4 +1,4 @@
-package com.xiaojiangi.editor;
+package com.xiaojiangi.editor.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
