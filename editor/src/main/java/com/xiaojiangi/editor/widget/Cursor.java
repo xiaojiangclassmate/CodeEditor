@@ -1,9 +1,11 @@
 package com.xiaojiangi.editor.widget;
 
+import android.util.Log;
+
 public class Cursor {
     private CodeEditor mEditor;
-    protected int line;
-    protected int column;
+    public int line;
+    public int column;
 
     public void restart(){
         line=column=0;
@@ -16,13 +18,32 @@ public class Cursor {
         line++;
         column=0;
     }
-    public void increment(){
-        column++;
+    public void dpadLeft(){
+        if (column!=0)
+            column--;
+            mEditor.invalidate();
     }
-    public void increment(int count){
-        column+=count;
+    public void dpadRight(){
+        if (column!=mEditor.getContent().get(line).length())
+            column++;
+            mEditor.invalidate();
+    }
+    public void dpadUp(){
+        if (line!=0)
+            line--;
+            if (column>mEditor.getContent().get(line).length())
+                column =mEditor.getContent().get(line).length();
+            mEditor.invalidate();
+    }
+    public void dpadDown(){
+        if (line!=mEditor.getContent().size()-1)
+            line++;
+            if (column>mEditor.getContent().get(line).length())
+                column =mEditor.getContent().get(line).length();
+                mEditor.invalidate();
     }
     public Cursor(CodeEditor codeEditor) {
+        mEditor =codeEditor;
         line=column=0;
     }
     public Cursor(CodeEditor codeEditor,int line, int column) {

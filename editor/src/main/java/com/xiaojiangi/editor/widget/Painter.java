@@ -39,7 +39,8 @@ public class Painter {
                     if (contentLine.charAt(i)=='\t')
                         tab+=1;
                 }
-                float cursorOffset= mPaint.measureText(contentLine,0,mCursor.column)+offset;
+                int column = mCursor.column;
+                float cursorOffset= mPaint.measureText(contentLine,0,column)+offset;
                 if (tab != 0) {
                     cursorOffset-=tab*mPaint.measureText("\t");
                 }

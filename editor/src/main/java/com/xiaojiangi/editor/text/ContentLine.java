@@ -61,6 +61,34 @@ public class ContentLine implements CharSequence {
         length+=1;
         return this;
     }
+    public ContentLine append(CharSequence text){
+        ensureCapacity(length+text.length());
+        for (int i = 0; i < text.length(); i++) {
+            value[length+i] = text.charAt(i);
+        }
+        length+= text.length();
+        return this;
+    }
+    public ContentLine append(ContentLine contentLine){
+        ensureCapacity(length+contentLine.length);
+        System.arraycopy(contentLine.value,0,value,length,contentLine.length);
+        length+=contentLine.length;
+        return this;
+    }
+    public ContentLine delete(int start, int end) {
+        if (start < 0)
+            throw new StringIndexOutOfBoundsException(start);
+        if (end > length)
+            end = length;
+        if (start > end)
+            throw new StringIndexOutOfBoundsException();
+        int len = end - start;
+        if (len > 0) {
+            System.arraycopy(value, start+len, value, start, length-end);
+            length -= len;
+        }
+        return this;
+    }
     private void ensureCapacity(int minimumCapacity){
         if (minimumCapacity- value.length>0){
             int newLength = value.length * 2 < minimumCapacity ? minimumCapacity + 2 : value.length * 2;

@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -78,6 +79,12 @@ public class CodeEditor extends View {
         outAttrs.inputType = EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
         return mInputConnection;
     }
+
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return true;
+    }
+
     @Override
     public void computeScroll() {
         super.computeScroll();
@@ -86,6 +93,38 @@ public class CodeEditor extends View {
             postInvalidate();
         }
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        switch (keyCode){
+            case KeyEvent.KEYCODE_HOME:
+                break;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                mCursor.dpadLeft();
+                break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                mCursor.dpadRight();
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                mCursor.dpadUp();
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                mCursor.dpadDown();
+                break;
+        }
+        switch (keyCode){
+            case KeyEvent.KEYCODE_DEL:
+                deleteText();
+                break;
+            case KeyEvent.KEYCODE_ENTER:
+                commitText("\n");
+                break;
+
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     public void showSoftInput(){
         if (isInTouchMode()) {
             requestFocusFromTouch();
@@ -108,20 +147,14 @@ public class CodeEditor extends View {
         mText =new Content(text);
         invalidate();
     }
-    public void commit(CharSequence text){
-        if (text.length()==1){
-            mText.insert(mCursor.line,mCursor.column,text);
-            if (text.charAt(0)=='\t'){
-                mCursor.lineFeed();
-            }else {
-                mCursor.increment();
-            }
-            invalidate();
+    public void commitText(CharSequence text){
+        mText.insert(mCursor,text);
+        invalidate();
+    }
+    public void deleteText(){
+        if (mCursor.line==0 &&mCursor.column==0)
             return;
-        }
-
-        mText.insert(mCursor.line,mCursor.column,text);
-        mCursor.increment(text.length());
+        mText.delete(mCursor);
         invalidate();
     }
     public void setTextSize(float size){

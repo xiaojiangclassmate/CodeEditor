@@ -1,7 +1,6 @@
 package com.xiaojiangi.editor.widget;
 
 import android.util.Log;
-import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 
 public class EditorInputConnection extends BaseInputConnection {
@@ -13,7 +12,8 @@ public class EditorInputConnection extends BaseInputConnection {
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
-        mEditor.commit(text);
+        mEditor.commitText(text);
         return super.commitText(text, newCursorPosition);
     }
+
 }
