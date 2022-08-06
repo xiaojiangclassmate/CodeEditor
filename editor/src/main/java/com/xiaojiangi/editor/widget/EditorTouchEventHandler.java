@@ -59,7 +59,6 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         return true;
     }
 
-    //拖动
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         int dx=(int)distanceX;
@@ -80,13 +79,11 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         return true;
     }
 
-    //长按
     @Override
     public void onLongPress(MotionEvent e) {
 
     }
 
-    //用户按下触摸屏、快速移动后松开
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         mOverScroller.forceFinished(true);
@@ -98,13 +95,11 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
     }
 
 
-    //单击之后短时间内没有再次单击
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
         return true;
     }
 
-    //在按下并抬起时发生
     @Override
     public boolean onDoubleTap(MotionEvent e) {
         return true;

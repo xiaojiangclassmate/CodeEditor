@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/file_view"
+        android:title="View.java" />
+    <item android:id="@+id/file_code_editor"
+        android:title="CodeEditor.java"/>
+    <item
+        android:id="@+id/editor_clear"
+        android:title="清空"/>
+</menu>

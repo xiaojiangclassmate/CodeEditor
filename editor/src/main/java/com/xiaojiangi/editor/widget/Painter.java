@@ -16,19 +16,18 @@ public class Painter {
     private float spaceWidth;
     private float tabWidth;
     private int tabCount;
-    private final float numberOffset;
+    private final float numberBackOffset;
     private final float textOffset;
     private float offset;
     protected void onDraw(Canvas canvas){
         var mText=mEditor.getContent();
         int lineStart =Math.max((int)(mEditor.getOverScroller().getCurrY() /getLineHeight()),0);
         int lineEnd =Math.min(mText.size(),(int) ((mEditor.getHeight()+mEditor.getOverScroller().getCurrY()) /getLineHeight() +1));
-        float lineNumberOffset =mPaint.measureText(String.valueOf(mText.size()));
-        float lineNumberBackgroundOffset =lineNumberOffset+numberOffset;
+        float lineNumberOffset =mPaint.measureText(String.valueOf(mText.size()))+2*mEditor.mDpUnit;
+        float lineNumberBackgroundOffset =lineNumberOffset+numberBackOffset;
         offset =lineNumberBackgroundOffset+textOffset;
         float start =lineStart*getLineHeight();
         float end =lineEnd*getLineHeight();
-
         if (lineEnd==mText.size())
             end+=canvas.getHeight();
 
@@ -45,7 +44,8 @@ public class Painter {
                     cursorOffset-=tab*mPaint.measureText("\t");
                 }
                 mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURSOR_COLOR));
-                mPaintOther.setStrokeWidth(4);
+                mPaintOther.setStrokeWidth(5);
+                mPaintOther.setTextAlign(Paint.Align.CENTER);
                 canvas.drawLine(cursorOffset,mCursor.line*getLineHeight(),cursorOffset,(mCursor.line+1)*getLineHeight(),mPaintOther);
 
             }
@@ -55,6 +55,7 @@ public class Painter {
         mEditor.setBackgroundColor(mTheme.getColor(BaseCodeTheme.CODE_BACKGROUND));
         //绘制行号背景
         mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_NUMBER_BACKGROUND));
+        mPaintOther.setTextAlign(Paint.Align.LEFT);
         canvas.drawRect(0f,start,lineNumberBackgroundOffset,end,mPaintOther);
 
         mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_COLOR));
@@ -93,7 +94,7 @@ public class Painter {
         tabCount =4;
         spaceWidth =mPaint.measureText(" ");
         setTabCount(tabCount);
-        numberOffset =8*codeEditor.mDpUnit;
+        numberBackOffset =8*codeEditor.mDpUnit;
         textOffset =5*codeEditor.mDpUnit;
     }
 

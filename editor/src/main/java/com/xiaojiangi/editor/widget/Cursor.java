@@ -12,6 +12,16 @@ public class Cursor {
         this.line = line;
         this.column = column;
     }
+    public void lineFeed(){
+        line++;
+        column=0;
+    }
+    public void increment(){
+        column++;
+    }
+    public void increment(int count){
+        column+=count;
+    }
     public Cursor(CodeEditor codeEditor) {
         line=column=0;
     }

@@ -17,7 +17,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="CodeEditor" />
+            android:background="@color/white"
+            app:title="XiaoJiang-CodeEditor" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <com.xiaojiangi.editor.widget.CodeEditor

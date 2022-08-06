@@ -61,31 +61,6 @@ public class CodeEditor extends View {
         setText("");
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        mPainter.onDraw(canvas);
-    }
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        boolean r1 =mGestureDetector.onTouchEvent(event);
-        boolean r2 =mEventHandler.onTouchEvent(event);
-        return (r1||r2 );
-    }
-    @Override
-    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        outAttrs.inputType = EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
-        return mInputConnection;
-    }
-    @Override
-    public void computeScroll() {
-        super.computeScroll();
-        if (mOverScroller.computeScrollOffset()){
-            scrollTo(mOverScroller.getCurrX(),mOverScroller.getCurrY());
-            postInvalidate();
-        }
-    }
     public void showSoftInput(){
         if (isInTouchMode()) {
             requestFocusFromTouch();
@@ -96,32 +71,39 @@ public class CodeEditor extends View {
         mInputMethodManager.showSoftInput(this, 0);
         invalidate();
     }
-    public void hideSoftInput(){
-        if(mInputMethodManager.isActive())
-            mInputMethodManager.hideSoftInputFromWindow(getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        mPainter.onDraw(canvas);
     }
+
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean r1 =mGestureDetector.onTouchEvent(event);
+        boolean r2 =mEventHandler.onTouchEvent(event);
+        return (r1||r2 );
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        outAttrs.inputType = EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
+        return mInputConnection;
+    }
+
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+        if (mOverScroller.computeScrollOffset()){
+            scrollTo(mOverScroller.getCurrX(),mOverScroller.getCurrY());
+            postInvalidate();
+        }
+    }
+
     public void setText(@Nullable CharSequence text){
         if (text==null)
             text="";
-        mCursor.restart();
-        mOverScroller.startScroll(0,0,0,0);
         mText =new Content(text);
-        invalidate();
-    }
-    public void commit(CharSequence text){
-        if (text.length()==1){
-            mText.insert(mCursor.line,mCursor.column,text);
-            if (text.charAt(0)=='\t'){
-                mCursor.lineFeed();
-            }else {
-                mCursor.increment();
-            }
-            invalidate();
-            return;
-        }
-
-        mText.insert(mCursor.line,mCursor.column,text);
-        mCursor.increment(text.length());
         invalidate();
     }
     public void setTextSize(float size){
