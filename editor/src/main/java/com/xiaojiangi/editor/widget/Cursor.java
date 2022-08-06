@@ -1,8 +1,9 @@
 package com.xiaojiangi.editor.widget;
 
 public class Cursor {
-    private int line;
-    private int column;
+    private CodeEditor mEditor;
+    protected int line;
+    protected int column;
 
     public void restart(){
         line=column=0;
@@ -11,10 +12,11 @@ public class Cursor {
         this.line = line;
         this.column = column;
     }
-    public Cursor() {
+    public Cursor(CodeEditor codeEditor) {
         line=column=0;
     }
-    public Cursor(int line, int column) {
+    public Cursor(CodeEditor codeEditor,int line, int column) {
+        mEditor =codeEditor;
         this.line = line;
         this.column = column;
     }
