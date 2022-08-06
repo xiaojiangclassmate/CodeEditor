@@ -9,16 +9,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Content {
-    private final List<ContentLine> mList;
-    private ContentLine maxLength;
+    private List<ContentLine> mList;
+    private ContentLine maxContentLine;
     public Content() {
         this(null);
     }
 
     public Content(@Nullable CharSequence text) {
         mList =new ArrayList<>();
-        maxLength =new ContentLine();
-        mList.add(maxLength);
+        maxContentLine =new ContentLine();
+        mList.add(maxContentLine);
         if (text==null)
             text="";
         insert(0,0,text);
@@ -30,8 +30,8 @@ public class Content {
             char c = text.charAt(i);
             switch (c) {
                 case '\n':
-                    if (maxLength.length < column)
-                        maxLength = currentLine;
+                    if (maxContentLine.length < column)
+                        maxContentLine = currentLine;
                     line++;
                     column = 0;
                     var contentLine = new ContentLine();
@@ -44,15 +44,15 @@ public class Content {
             }
         }
         mList.addAll(list);
-        if (maxLength.length < currentLine.length())
-            maxLength = currentLine;
+        if (maxContentLine.length < currentLine.length())
+            maxContentLine = currentLine;
     }
     public Content append(int line,char c){
         var contentLine =get(line);
         contentLine.append(c);
-        if (contentLine!=maxLength)
-            if (contentLine.length> maxLength.length())
-                maxLength =contentLine;
+        if (contentLine!=maxContentLine)
+            if (contentLine.length> maxContentLine.length())
+                maxContentLine =contentLine;
         return this;
     }
     public int size(){
@@ -60,6 +60,9 @@ public class Content {
     }
     public ContentLine get(int pos){
         return mList.get(pos);
+    }
+    public ContentLine getMaxContentLine(){
+        return maxContentLine;
     }
     @NonNull
     @Override
