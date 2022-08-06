@@ -46,6 +46,7 @@ public class Painter {
                 }
                 mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURSOR_COLOR));
                 mPaintOther.setStrokeWidth(4);
+                mPaintOther.setTextAlign(Paint.Align.CENTER);
                 canvas.drawLine(cursorOffset,mCursor.line*getLineHeight(),cursorOffset,(mCursor.line+1)*getLineHeight(),mPaintOther);
 
             }
@@ -55,6 +56,7 @@ public class Painter {
         mEditor.setBackgroundColor(mTheme.getColor(BaseCodeTheme.CODE_BACKGROUND));
         //绘制行号背景
         mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_NUMBER_BACKGROUND));
+        mPaintOther.setTextAlign(Paint.Align.LEFT);
         canvas.drawRect(0f,start,lineNumberBackgroundOffset,end,mPaintOther);
 
         mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_COLOR));
