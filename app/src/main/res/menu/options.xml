@@ -12,11 +12,11 @@
     <item
         android:title="撤销"
         android:id="@+id/editor_undo"
-        android:icon="@drawable_ic_undo"
+        android:icon="@drawable/ic_undo"
         app:showAsAction="always" />
     <item
         android:title="恢复"
         android:id="@+id/editor_redo"
-        android:icon="@drawable_ic_redo"
+        android:icon="@drawable/ic_redo"
         app:showAsAction="always" />
 </menu>
