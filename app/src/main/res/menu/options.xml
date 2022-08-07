@@ -8,4 +8,16 @@
     <item
         android:id="@+id/editor_clear"
         android:title="清空"/>
+    <item
+        android:title="撤销"
+        android:icon="@drawable/"
+        app:showAsAction="always"
+        android:id="@+id/editor_undo"
+        tools:ignore="AlwaysShowAction" />
+    <item
+        android:title="恢复"
+        android:icon="@drawable/ic_baseline_redo_24"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction"
+        android:id="@+id/editor_redo"/>
 </menu>

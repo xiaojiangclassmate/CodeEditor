@@ -30,9 +30,20 @@ public class Painter {
         float end =lineEnd*getLineHeight();
         if (lineEnd==mText.size())
             end+=canvas.getHeight();
-
-        if (mEditor.isCursor()){
-            if (lineStart<=mCursor.line && mCursor.line <=lineEnd){
+        //全局背景
+        mEditor.setBackgroundColor(mTheme.getColor(BaseCodeTheme.CODE_BACKGROUND));
+        //绘制行号背景
+        mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_NUMBER_BACKGROUND));
+        mPaintOther.setTextAlign(Paint.Align.LEFT);
+        canvas.drawRect(0f,start,lineNumberBackgroundOffset,end,mPaintOther);
+        //如果光标所在行在可视行中 则绘制光标和当前行背景
+        if (lineStart<=mCursor.line && mCursor.line <=lineEnd){
+            //绘制当前行背景
+            mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURRENT_LINE_BACKGROUND));
+            float currX =mEditor.getOverScroller().getCurrX();
+            canvas.drawRect(currX,getLineHeight()*mCursor.line, currX+canvas.getWidth(), getLineHeight()*(mCursor.line+1),mPaintOther);
+            //绘制光标
+            if (mEditor.isCursor()){
                 var contentLine =mText.get(mCursor.line);
                 int tab=0;
                 for (int i = 0; i < mCursor.column; i++) {
@@ -48,21 +59,13 @@ public class Painter {
                 mPaintOther.setStrokeWidth(5);
                 mPaintOther.setTextAlign(Paint.Align.CENTER);
                 canvas.drawLine(cursorOffset,mCursor.line*getLineHeight(),cursorOffset,(mCursor.line+1)*getLineHeight(),mPaintOther);
-
             }
+
         }
-
-        //全局背景
-        mEditor.setBackgroundColor(mTheme.getColor(BaseCodeTheme.CODE_BACKGROUND));
-        //绘制行号背景
-        mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_NUMBER_BACKGROUND));
-        mPaintOther.setTextAlign(Paint.Align.LEFT);
-        canvas.drawRect(0f,start,lineNumberBackgroundOffset,end,mPaintOther);
-
+        //绘制分割线
         mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_COLOR));
         mPaintOther.setStrokeWidth(2);
         canvas.drawLine(lineNumberBackgroundOffset,start, lineNumberBackgroundOffset,end,mPaintOther);
-
 
         for (int i = lineStart; i < lineEnd; i++) {
             var textBaseLine =(getLineHeight()*i)-mPaint.ascent();
