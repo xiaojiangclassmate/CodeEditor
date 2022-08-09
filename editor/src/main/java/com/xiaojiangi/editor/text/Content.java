@@ -1,5 +1,7 @@
 package com.xiaojiangi.editor.text;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -55,13 +57,21 @@ public class Content {
             if (text.charAt(0)=='\n'){
                 var contentLine =mList.get(cursor.line);
                 if (contentLine.length== cursor.column){
+                    //行尾换行
                     mList.add(cursor.line+1,new ContentLine());
                     cursor.line++;
                     cursor.column=0;
                     return this;
+                }else {
+                    mList.add(cursor.line+1,new ContentLine(contentLine.subSequence(cursor.column,contentLine.length)));
+                    contentLine.delete(cursor.column, contentLine.length);
                 }
-                mList.add(cursor.line+1,new ContentLine(contentLine.subSequence(cursor.column,contentLine.length)));
-                contentLine.delete(cursor.column, contentLine.length);
+
+            }else {
+                var contentLine =mList.get(cursor.line);
+                contentLine.insert(cursor.column, text.charAt(0));
+                cursor.column++;
+                return this;
             }
         }
         var list = new LinkedList<ContentLine>();
@@ -101,6 +111,31 @@ public class Content {
         }
         contentLine.delete(cursor.column-1,cursor.column);
         cursor.column--;
+        return this;
+    }
+    public Content delete(Cursor cursor,CharSequence text){
+        if (text.length()==1){
+            delete(cursor);
+            return this;
+        }
+        var currentContentLine =get(cursor.line);
+//        //删除该行全部内容时
+//        if (text.length()==currentContentLine.length){
+//            if (cursor.line!=0){
+//                mList.remove(cursor.line);
+//                cursor.line--;
+//                cursor.column =get(cursor.line).length;
+//            }else {
+//                currentContentLine.clear();
+//                cursor.restart();
+//            }
+//        }
+        int line = cursor.line;
+        int column = cursor.column;
+        Log.d("Editor","column: "+column);
+//        Log.d("Editor","text: "+get(line).delete(column-1,column));
+        column--;
+        cursor.set(line,column);
         return this;
     }
     public Content append(int line,char c){

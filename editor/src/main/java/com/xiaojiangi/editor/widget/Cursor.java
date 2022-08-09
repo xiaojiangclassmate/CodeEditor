@@ -1,6 +1,5 @@
 package com.xiaojiangi.editor.widget;
 
-import android.util.Log;
 
 public class Cursor {
     private CodeEditor mEditor;

@@ -98,6 +98,11 @@ public class ContentLine implements CharSequence {
         }
     }
 
+    public ContentLine clear(){
+        value =new char[16];
+        length =0;
+        return this;
+    }
     @Override
     public int length() {
         return length;

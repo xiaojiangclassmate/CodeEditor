@@ -20,6 +20,7 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 
 import com.xiaojiangi.editor.text.Content;
+import com.xiaojiangi.editor.text.TextManager;
 import com.xiaojiangi.editor.theme.BaseCodeTheme;
 
 public class CodeEditor extends View {
@@ -35,6 +36,7 @@ public class CodeEditor extends View {
     private GestureDetector mGestureDetector;
     private EditorTouchEventHandler mEventHandler;
     private OverScroller mOverScroller;
+    private TextManager mTextManager;
     public CodeEditor(Context context) {this(context,null);}
     public CodeEditor(Context context, @Nullable AttributeSet attrs) {this(context, attrs,0);}
     public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {this(context, attrs, defStyleAttr,0);}
@@ -57,9 +59,13 @@ public class CodeEditor extends View {
         mText =new Content();
         mTheme =new BaseCodeTheme();
         mPainter =new Painter(this);
+        mTextManager =new TextManager(this);
         setCursor(true);
         setTextSize(18);
         setText("");
+        String str ="ABCDEF";
+        Log.d("Editor str",String.valueOf(str.charAt(0)));
+        Log.d("Editor str",String.valueOf(str.subSequence(0,1)));
     }
 
     @Override
@@ -143,19 +149,43 @@ public class CodeEditor extends View {
         if (text==null)
             text="";
         mCursor.restart();
+        mTextManager.restart();
         mOverScroller.startScroll(0,0,0,0);
         mText =new Content(text);
         invalidate();
     }
     public void commitText(CharSequence text){
         mText.insert(mCursor,text);
+        mTextManager.tracker(TextManager.ACTION.ADD,text,mCursor.line,mCursor.column);
         invalidate();
     }
     public void deleteText(){
         if (mCursor.line==0 &&mCursor.column==0)
             return;
+        if (mCursor.column==0){
+            mTextManager.tracker(TextManager.ACTION.DEL,"\n", mCursor.line-1, mText.get(mCursor.line-1).length());
+
+        }else{
+            mTextManager.tracker(TextManager.ACTION.DEL,mText.get(mCursor.line).subSequence(mCursor.column-1,mCursor.column), mCursor.line, mCursor.column-1);
+        }
         mText.delete(mCursor);
         invalidate();
+    }
+    public void insert(CharSequence text,int line,int column){
+        mCursor.set(line, column);
+        mText.insert(mCursor,text);
+        invalidate();
+    }
+    public void delete(CharSequence text,int line,int column){
+        mCursor.set(line, column);
+        mText.delete(mCursor,text);
+        invalidate();
+    }
+    public void undo(){
+        mTextManager.undo();
+    }
+    public void redo(){
+        mTextManager.redo();
     }
     public void setTextSize(float size){
         mPainter.setPaintSize(size);
@@ -197,7 +227,7 @@ public class CodeEditor extends View {
     public void setTheme(BaseCodeTheme theme){
         mTheme =theme;
     }
-    protected Content getContent(){
+    public Content getContent(){
         return mText;
     }
     protected OverScroller getOverScroller(){

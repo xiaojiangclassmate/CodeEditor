@@ -31,6 +31,8 @@ class MainActivity : AppCompatActivity() {
             R.id.file_view -> _binding.editor.text = String(assets.open("View.java").readBytes())
             R.id.file_code_editor -> _binding.editor.text = String(assets.open("CodeEditor.java").readBytes())
             R.id.editor_clear -> _binding.editor.text = ""
+            R.id.editor_undo -> _binding.editor.undo()
+            R.id.editor_redo -> _binding.editor.redo()
         }
         return true
     }
