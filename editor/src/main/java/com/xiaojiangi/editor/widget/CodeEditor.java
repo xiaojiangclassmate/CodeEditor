@@ -172,11 +172,14 @@ public class CodeEditor extends View {
         invalidate();
     }
     public void insert(CharSequence text,int line,int column){
+        mTextManager.tracker(TextManager.ACTION.ADD,text,line,column+1);
         mCursor.set(line, column);
         mText.insert(mCursor,text);
         invalidate();
     }
+
     public void delete(CharSequence text,int line,int column){
+        mTextManager.tracker(TextManager.ACTION.DEL,text,line,column-1);
         mCursor.set(line, column);
         mText.delete(mCursor,text);
         invalidate();

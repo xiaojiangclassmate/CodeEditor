@@ -103,10 +103,11 @@ public class Content {
             return this;
         }
         if (cursor.column == 0 && cursor.line != 0){
+            int len =contentLine.length;
             get(cursor.line-1).append(contentLine);
             remove(cursor.line);
             cursor.line--;
-            cursor.column =get(cursor.line).length;
+            cursor.column =get(cursor.line).length-len;
             return this;
         }
         contentLine.delete(cursor.column-1,cursor.column);
