@@ -20,10 +20,20 @@ public final class Cursor {
         column=0;
     }
     public void dpadLeft(){
+        if (column==0 && line!=0){
+            line--;
+            column =mText.get(line).length();
+            return;
+        }
         if (column!=0)
             column--;
     }
     public void dpadRight(){
+        if (column ==mText.get(line).length() &&line != mText.size()-1){
+            column=0;
+            line++;
+            return;
+        }
         if (column!=mText.get(line).length())
             column++;
     }
