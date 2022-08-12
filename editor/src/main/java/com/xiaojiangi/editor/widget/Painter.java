@@ -21,6 +21,7 @@ public class Painter {
     private float offset;
     protected void onDraw(Canvas canvas){
         var mText=mEditor.getContent();
+        mCursor = mText.getCursor();
         int lineStart =Math.max((int)(mEditor.getOverScroller().getCurrY() /getLineHeight()),0);
         int lineEnd =Math.min(mText.size(),(int) ((mEditor.getHeight()+mEditor.getOverScroller().getCurrY()) /getLineHeight() +1));
         float lineNumberOffset =mPaint.measureText(String.valueOf(mText.size()))+2*mEditor.mDpUnit;
@@ -89,7 +90,6 @@ public class Painter {
     }
     public Painter(CodeEditor codeEditor) {
         mEditor =codeEditor;
-        mCursor = codeEditor.getCursor();
         mTheme =codeEditor.getTheme();
         mPaint =new Paint();
         mPaint.setAntiAlias(true);

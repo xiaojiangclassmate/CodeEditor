@@ -1,8 +1,10 @@
 package com.xiaojiangi.editor.widget;
 
 
-public class Cursor {
-    private CodeEditor mEditor;
+import com.xiaojiangi.editor.text.Content;
+
+public final class Cursor {
+    private Content mText;
     public int line;
     public int column;
 
@@ -20,33 +22,29 @@ public class Cursor {
     public void dpadLeft(){
         if (column!=0)
             column--;
-            mEditor.invalidate();
     }
     public void dpadRight(){
-        if (column!=mEditor.getContent().get(line).length())
+        if (column!=mText.get(line).length())
             column++;
-            mEditor.invalidate();
     }
     public void dpadUp(){
         if (line!=0)
             line--;
-            if (column>mEditor.getContent().get(line).length())
-                column =mEditor.getContent().get(line).length();
-            mEditor.invalidate();
+            if (column>mText.get(line).length())
+                column =mText.get(line).length();
     }
     public void dpadDown(){
-        if (line!=mEditor.getContent().size()-1)
+        if (line!=mText.size()-1)
             line++;
-            if (column>mEditor.getContent().get(line).length())
-                column =mEditor.getContent().get(line).length();
-                mEditor.invalidate();
+            if (column>mText.get(line).length())
+                column =mText.get(line).length();
     }
-    public Cursor(CodeEditor codeEditor) {
-        mEditor =codeEditor;
+    public Cursor(Content content) {
+        mText =content;
         line=column=0;
     }
-    public Cursor(CodeEditor codeEditor,int line, int column) {
-        mEditor =codeEditor;
+    public Cursor(Content content,int line, int column) {
+        mText =content;
         this.line = line;
         this.column = column;
     }

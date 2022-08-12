@@ -15,20 +15,22 @@ import java.util.List;
 public class Content {
     private List<ContentLine> mList;
     private ContentLine maxContentLine;
-    private StringBuilder a;
+    private TextManager mTextManager;
+    private Cursor mCursor;
     public Content() {
         this(null);
     }
 
     public Content(@Nullable CharSequence text) {
         mList =new ArrayList<>();
+        mCursor = new Cursor(this);
+        mTextManager =new TextManager();
         maxContentLine =new ContentLine();
         mList.add(maxContentLine);
         if (text==null)
             text="";
-        insert(0,0,text);
-    }
-    public void insert(int line, int column, @NonNull CharSequence text) {
+        int line=0;
+        int column=0;
         var list = new LinkedList<ContentLine>();
         var currentLine = mList.get(line);
         for (int i = 0; i < text.length(); i++) {
@@ -51,6 +53,39 @@ public class Content {
         mList.addAll(list);
         if (maxContentLine.length < currentLine.length())
             maxContentLine = currentLine;
+
+    }
+    public void insert(int line, int column, @NonNull CharSequence text) {
+        int endLine =line;
+        int endColumn =column;
+        var list = new LinkedList<ContentLine>();
+        var currentLine = mList.get(endLine);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '\n':
+                    if (maxContentLine.length < endColumn)
+                        maxContentLine = currentLine;
+                    endLine++;
+                    endColumn = 0;
+                    var contentLine = new ContentLine();
+                    currentLine = contentLine;
+                    list.add(contentLine);
+                    break;
+                default:
+                    currentLine.insert(endColumn,c);
+                    endColumn++;
+            }
+        }
+        mList.addAll(list);
+        if (maxContentLine.length < currentLine.length())
+            maxContentLine = currentLine;
+        mTextManager.insertText(line,column,endLine,endColumn,text);
+        mCursor.set(endLine,endColumn);
+    }
+    public Content insert(@NonNull CharSequence text){
+
+        return this;
     }
     public Content insert(Cursor cursor,@NonNull CharSequence text){
         if (text.length()==1) {
@@ -92,6 +127,10 @@ public class Content {
             }
         }
         mList.addAll(list);
+        return this;
+    }
+    public Content delete(int startLine,int column,int endLine,int endColumn){
+
         return this;
     }
     public Content delete(Cursor cursor){
@@ -146,6 +185,15 @@ public class Content {
             if (contentLine.length> maxContentLine.length())
                 maxContentLine =contentLine;
         return this;
+    }
+    public void undo(){
+        mTextManager.undo(this);
+    }
+    public void redo(){
+        mTextManager.redo(this);
+    }
+    public Cursor getCursor(){
+        return mCursor;
     }
     public int size(){
         return mList.size();

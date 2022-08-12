@@ -16,6 +16,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.OverScroller;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -36,7 +37,6 @@ public class CodeEditor extends View {
     private GestureDetector mGestureDetector;
     private EditorTouchEventHandler mEventHandler;
     private OverScroller mOverScroller;
-    private TextManager mTextManager;
     public CodeEditor(Context context) {this(context,null);}
     public CodeEditor(Context context, @Nullable AttributeSet attrs) {this(context, attrs,0);}
     public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {this(context, attrs, defStyleAttr,0);}
@@ -48,7 +48,6 @@ public class CodeEditor extends View {
     private void init(){
         setFocusable(true);
         setFocusableInTouchMode(true);
-        mCursor =new Cursor(this);
         mDpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, Resources.getSystem().getDisplayMetrics()) / 10F;
         mInputConnection =new EditorInputConnection(this);
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -59,13 +58,9 @@ public class CodeEditor extends View {
         mText =new Content();
         mTheme =new BaseCodeTheme();
         mPainter =new Painter(this);
-        mTextManager =new TextManager(this);
         setCursor(true);
         setTextSize(18);
         setText("");
-        String str ="ABCDEF";
-        Log.d("Editor str",String.valueOf(str.charAt(0)));
-        Log.d("Editor str",String.valueOf(str.subSequence(0,1)));
     }
 
     @Override
@@ -108,20 +103,24 @@ public class CodeEditor extends View {
                 break;
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 mCursor.dpadLeft();
+                invalidate();
                 break;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 mCursor.dpadRight();
+                invalidate();
                 break;
             case KeyEvent.KEYCODE_DPAD_UP:
                 mCursor.dpadUp();
+                invalidate();
                 break;
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 mCursor.dpadDown();
+                invalidate();
                 break;
         }
         switch (keyCode){
             case KeyEvent.KEYCODE_DEL:
-                deleteText();
+                deleteText(" ",mCursor.line,mCursor.column);
                 break;
             case KeyEvent.KEYCODE_ENTER:
                 commitText("\n");
@@ -148,47 +147,38 @@ public class CodeEditor extends View {
     public void setText(@Nullable CharSequence text){
         if (text==null)
             text="";
-        mCursor.restart();
-        mTextManager.restart();
-        mOverScroller.startScroll(0,0,0,0);
         mText =new Content(text);
+        mCursor =mText.getCursor();
+        mOverScroller.startScroll(0,0,0,0);
         invalidate();
     }
     public void commitText(CharSequence text){
-        mText.insert(mCursor,text);
-        mTextManager.tracker(TextManager.ACTION.ADD,text,mCursor.line,mCursor.column);
+        insertText(text, mCursor.line, mCursor.column);
+    }
+
+    public void insertText(CharSequence text,int line,int column){
+        mCursor.set(line,column);
+        mText.insert(line,column,text);
+//        mText.insert(mCursor,text);
         invalidate();
     }
-    public void deleteText(){
+
+    public void deleteText(CharSequence text,int line,int column){
         if (mCursor.line==0 &&mCursor.column==0)
             return;
-        if (mCursor.column==0){
-            mTextManager.tracker(TextManager.ACTION.DEL,"\n", mCursor.line-1, mText.get(mCursor.line-1).length());
-
-        }else{
-            mTextManager.tracker(TextManager.ACTION.DEL,mText.get(mCursor.line).subSequence(mCursor.column-1,mCursor.column), mCursor.line, mCursor.column-1);
-        }
-        mText.delete(mCursor);
-        invalidate();
-    }
-    public void insert(CharSequence text,int line,int column){
-        mTextManager.tracker(TextManager.ACTION.ADD,text,line,column+1);
-        mCursor.set(line, column);
-        mText.insert(mCursor,text);
-        invalidate();
-    }
-
-    public void delete(CharSequence text,int line,int column){
-        mTextManager.tracker(TextManager.ACTION.DEL,text,line,column-1);
-        mCursor.set(line, column);
+        mCursor.set(line,column);
         mText.delete(mCursor,text);
+
         invalidate();
     }
     public void undo(){
-        mTextManager.undo();
+        mText.undo();
+        invalidate();
     }
+
     public void redo(){
-        mTextManager.redo();
+        mText.redo();
+        invalidate();
     }
     public void setTextSize(float size){
         mPainter.setPaintSize(size);
