@@ -3,20 +3,22 @@ package com.xiaojiangi.editor.text;
 
 
 
-import android.util.Log;
 
 import java.util.LinkedList;
 
 public final class TextManager {
-    private LinkedList<Stack> stacks =new LinkedList<>();
+    private LinkedList<Stack> stacks;
     private static final int MAX_STACK =256;
     public static long MERGE_TIME =5000L;
-    private int stackPos=0;
+    private int stackPos;
+    private boolean isExecutive;
     public TextManager() {
-
+        stacks =new LinkedList<>();
+        stackPos =0;
+        isExecutive =false;
     }
 
-    public  boolean canUndo(){
+    public boolean canUndo(){
         return stackPos > 0;
     }
     public boolean canRedo(){
@@ -25,19 +27,25 @@ public final class TextManager {
 
     public void undo(Content content){
         if (canUndo()){
+            isExecutive =true;
             stacks.get(stackPos-1).undo(content);
             stackPos--;
+            isExecutive =false;
         }
+
     }
     public void redo(Content content){
         if (canRedo()){
+            isExecutive =true;
             stacks.get(stackPos).redo(content);
             stackPos++;
+            isExecutive =false;
         }
+
     }
     private void cleanBeforePush(){
         while (stackPos<stacks.size()){
-            stacks.remove(stackPos-1);
+            stacks.removeLast();
         }
     }
     private void clearPush(){
@@ -62,10 +70,12 @@ public final class TextManager {
             }
         }
         clearPush();
-        Log.d("TextManager",""+stackPos);
     }
 
     public void insertText(int startLine, int startColumn, int endLine, int endColumn,CharSequence text){
+        if (isExecutive)
+            return;
+
         var InsertStack =new InsertStack();
         InsertStack.startLine =startLine;
         InsertStack.startColumn =startColumn;
@@ -76,6 +86,8 @@ public final class TextManager {
     }
 
     public void deleteStack(int startLine, int startColumn, int endLine, int endColumn,CharSequence text){
+        if (isExecutive)
+            return;
         var deleteStack =new DeleteStack();
         deleteStack.startLine =startLine;
         deleteStack.startColumn =startColumn;
