@@ -81,6 +81,7 @@ public class Content {
         if (maxContentLine.length < currentLine.length())
             maxContentLine = currentLine;
         mTextManager.insertText(line,column,endLine,endColumn,text);
+        Log.d("Editor insert","startLine: "+line+" startColumn: "+column +" endLine: "+endLine +" endColumn: "+endColumn+" text: "+text);
         mCursor.set(endLine,endColumn);
     }
     public Content insert(@NonNull CharSequence text){
@@ -129,8 +130,16 @@ public class Content {
         mList.addAll(list);
         return this;
     }
-    public Content delete(int startLine,int column,int endLine,int endColumn){
+    public Content delete(int startLine,int startColumn,int endLine,int endColumn){
+        if (startLine==endLine){
 
+            var text =get(startLine).subSequence(startColumn,endColumn);
+            get(startLine).delete(startColumn,endColumn);
+            int length=endColumn-startColumn;
+            mTextManager.deleteStack(startLine,startColumn-length,endLine-length,length,"");
+            Log.d("Editor delete","startLine: "+startLine+" startColumn: "+(startColumn) +" endLine: "+endLine +" endColumn: "+(endColumn)+" text: "+text);
+            mCursor.set(startLine,startColumn);
+        }
         return this;
     }
     public Content delete(Cursor cursor){
