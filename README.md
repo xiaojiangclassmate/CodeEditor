@@ -1,2 +1,2 @@
-# CodeEditor
-Code editor running on Android.
+# Code Editor
+

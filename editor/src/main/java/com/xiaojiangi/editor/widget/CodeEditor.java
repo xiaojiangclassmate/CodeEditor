@@ -120,7 +120,7 @@ public class CodeEditor extends View {
         }
         switch (keyCode){
             case KeyEvent.KEYCODE_DEL:
-                deleteText(" ",mCursor.line,mCursor.column);
+                deleteText();
                 break;
             case KeyEvent.KEYCODE_ENTER:
                 commitText("\n");
@@ -153,22 +153,15 @@ public class CodeEditor extends View {
         invalidate();
     }
     public void commitText(CharSequence text){
-        insertText(text, mCursor.line, mCursor.column);
-    }
-
-    public void insertText(CharSequence text,int line,int column){
-        mCursor.set(line,column);
-        mText.insert(line,column,text);
-//        mText.insert(mCursor,text);
+        mText.insert(mCursor.line, mCursor.column,text);
         invalidate();
     }
 
-    public void deleteText(CharSequence text,int line,int column){
+
+    public void deleteText(){
         if (mCursor.line==0 &&mCursor.column==0)
             return;
-        mCursor.set(line,column);
-        mText.delete(mCursor,text);
-
+        mText.delete(mCursor.line,mCursor.column);
         invalidate();
     }
     public void undo(){

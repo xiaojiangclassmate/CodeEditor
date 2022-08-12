@@ -58,36 +58,36 @@ public class Content {
     public void insert(int line, int column, @NonNull CharSequence text) {
         int endLine =line;
         int endColumn =column;
-        var list = new LinkedList<ContentLine>();
         var currentLine = mList.get(endLine);
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             switch (c) {
                 case '\n':
-                    if (maxContentLine.length < endColumn)
-                        maxContentLine = currentLine;
-                    endLine++;
-                    endColumn = 0;
-                    var contentLine = new ContentLine();
-                    currentLine = contentLine;
-                    list.add(contentLine);
-                    break;
-                default:
-                    currentLine.insert(endColumn,c);
-                    endColumn++;
+                    //在行尾换行
+                     if(currentLine.length == endColumn){
+                         var contentLine =new ContentLine();
+                         mList.add(endLine+1,contentLine);
+                         currentLine =contentLine;
+                     }else {
+                         mList.add(endLine+1,new ContentLine(currentLine.subSequence(endColumn,currentLine.length)));
+                         currentLine.delete(endColumn, currentLine.length);
+                     }
+                     endLine++;
+                     endColumn=0;
+                     if (maxContentLine.length < endColumn)
+                         maxContentLine = currentLine;
+                     break;
+                     default:
+                         currentLine.insert(endColumn,c);
+                         endColumn++;
             }
         }
-        mList.addAll(list);
         if (maxContentLine.length < currentLine.length())
             maxContentLine = currentLine;
         mTextManager.insertText(line,column,endLine,endColumn,text);
-        Log.d("Editor insert","startLine: "+line+" startColumn: "+column +" endLine: "+endLine +" endColumn: "+endColumn+" text: "+text);
         mCursor.set(endLine,endColumn);
     }
-    public Content insert(@NonNull CharSequence text){
 
-        return this;
-    }
     public Content insert(Cursor cursor,@NonNull CharSequence text){
         if (text.length()==1) {
             if (text.charAt(0)=='\n'){
@@ -136,8 +136,7 @@ public class Content {
             var text =get(startLine).subSequence(startColumn,endColumn);
             get(startLine).delete(startColumn,endColumn);
             int length=endColumn-startColumn;
-            mTextManager.deleteStack(startLine,startColumn-length,endLine-length,length,"");
-            Log.d("Editor delete","startLine: "+startLine+" startColumn: "+(startColumn) +" endLine: "+endLine +" endColumn: "+(endColumn)+" text: "+text);
+            mTextManager.deleteStack(startLine,startColumn-length,endLine-length,length,text);
             mCursor.set(startLine,startColumn);
         }
         return this;
@@ -162,29 +161,39 @@ public class Content {
         cursor.column--;
         return this;
     }
-    public Content delete(Cursor cursor,CharSequence text){
-        if (text.length()==1){
-            delete(cursor);
-            return this;
+
+    /**
+     * 删除光标前的一个字符
+     * @param line
+     * @param column
+     * @return
+     */
+    public Content delete(int line,int column){
+        int startLine =line;
+        int startColumn =column;
+        StringBuilder sb;
+        if (column==0){
+            var contentLine =get(startLine);
+            if (contentLine.length==0){
+                sb=new StringBuilder("\n");
+                mList.remove(startLine);
+                startLine--;
+                startColumn =get(startLine).length;
+            }else {
+                var lastContentLine =get(line-1);
+                startColumn=lastContentLine.length;
+                startLine--;
+                lastContentLine.append(contentLine);
+                remove(line);
+                sb =new StringBuilder("\n");
+            }
+        }else {
+            sb =new StringBuilder(get(line).subSequence(startColumn-1,startColumn));
+            get(line).delete(startColumn-1,startColumn);
+            startColumn--;
         }
-        var currentContentLine =get(cursor.line);
-//        //删除该行全部内容时
-//        if (text.length()==currentContentLine.length){
-//            if (cursor.line!=0){
-//                mList.remove(cursor.line);
-//                cursor.line--;
-//                cursor.column =get(cursor.line).length;
-//            }else {
-//                currentContentLine.clear();
-//                cursor.restart();
-//            }
-//        }
-        int line = cursor.line;
-        int column = cursor.column;
-        Log.d("Editor","column: "+column);
-//        Log.d("Editor","text: "+get(line).delete(column-1,column));
-        column--;
-        cursor.set(line,column);
+        mTextManager.deleteStack(startLine,startColumn,line,column,sb);
+        setCursor(startLine,startColumn);
         return this;
     }
     public Content append(int line,char c){
@@ -215,6 +224,12 @@ public class Content {
     }
     public ContentLine getMaxContentLine(){
         return maxContentLine;
+    }
+
+    private void setCursor(int line,int column){
+        if (line>mList.size() && column>get(line).length){
+        }
+        mCursor.set(line,column);
     }
     @NonNull
     @Override
