@@ -28,6 +28,7 @@ public class Content {
         mList.add(maxContentLine);
         if (text==null)
             text="";
+        
         int line=0;
         int column=0;
         var list = new LinkedList<ContentLine>();
