@@ -110,8 +110,12 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         return true;
     }
 
+    private void select(MotionEvent e) {
+        Painter painter = mEditor.getPainter();
 
-    public OverScroller getOverScroller(){
+    }
+
+    public OverScroller getOverScroller() {
         return mOverScroller;
     }
 }

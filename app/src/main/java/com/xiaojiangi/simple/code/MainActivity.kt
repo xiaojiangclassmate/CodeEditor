@@ -3,6 +3,7 @@ package com.xiaojiangi.simple.code
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.StatFs
 import android.view.Menu
 import android.view.MenuItem
 import com.xiaojiangi.simple.code.databinding.ActivityMainBinding
@@ -13,6 +14,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(_binding.root)
+        StatFs("").toString()
         setSupportActionBar(_binding.toolbar)
         _binding.editor.apply {
             text = String(assets.open("View.java").readBytes())

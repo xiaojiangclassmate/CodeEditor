@@ -2,6 +2,8 @@ package com.xiaojiangi.editor.text;
 
 
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -124,15 +126,53 @@ public class Content {
         mList.addAll(list);
         return this;
     }
-    public Content delete(int startLine,int startColumn,int endLine,int endColumn){
-        if (startLine==endLine){
+    public Content delete(int startLine,int startColumn,int endLine,int endColumn) {
 
-            var text =get(startLine).subSequence(startColumn,endColumn);
-            get(startLine).delete(startColumn,endColumn);
-            int length=endColumn-startColumn;
-            mTextManager.deleteStack(startLine,startColumn-length,endLine-length,length,text);
-            mCursor.set(startLine,startColumn);
+        //同行操作
+        if (startLine == endLine) {
+            var contentLine = get(startLine);
+            int length = endColumn - startColumn;
+            //删除行全部
+            if (length == contentLine.length) {
+                mTextManager.deleteStack(startLine, startColumn - length, endLine - length, length, new StringBuilder(contentLine).append('\n'));
+                remove(startLine);
+            } else {
+                StringBuilder sb;
+                if (startColumn == 0) {
+                    sb = new StringBuilder('\n').append(get(startLine).subSequence(startColumn, endColumn));
+                    get(startLine).delete(startColumn, endColumn);
+                } else {
+                    sb = new StringBuilder(get(startLine).subSequence(startColumn, endColumn));
+                    get(startLine).delete(startColumn, endColumn);
+                }
+
+                mTextManager.deleteStack(startLine, startColumn - length, endLine, length, sb);
+            }
+
+
+        } else {
+            var contentLine = get(startLine);
+            //全部删除
+            if (startLine == 0 && startColumn == 0 && endLine == (size() - 1) && endColumn == (get(endLine).length)) {
+                mTextManager.deleteStack(startLine, startColumn, endLine, endColumn, toString());
+                mList.clear();
+                maxContentLine = new ContentLine();
+                mList.add(maxContentLine);
+                setCursor(startLine, startColumn);
+                return this;
+            }
+            StringBuilder sb;
+            if (contentLine.length == startColumn) {
+                sb = new StringBuilder('\n').append(get(endLine).subSequence(0, endColumn));
+                get(endLine).delete(0, endColumn);
+                contentLine.append(get(endLine));
+                remove(endLine);
+                mTextManager.deleteStack(startLine, startColumn, endLine, endColumn, sb);
+            }
+
+
         }
+        setCursor(startLine, startColumn);
         return this;
     }
     public Content delete(Cursor cursor){
@@ -217,10 +257,10 @@ public class Content {
     }
 
     private void setCursor(int line,int column){
-        if (line>mList.size()){
+        if (line >= mList.size()) {
             throw new StringIndexOutOfBoundsException("cursor line greater than Content size.");
         }
-        if (column>get(line).length){
+        if (column > get(line).length) {
             throw new StringIndexOutOfBoundsException("cursor column greater than ContentLine length.");
         }
         mCursor.set(line,column);

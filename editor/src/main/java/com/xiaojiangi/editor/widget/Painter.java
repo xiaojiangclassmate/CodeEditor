@@ -2,6 +2,7 @@ package com.xiaojiangi.editor.widget;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.Log;
 
