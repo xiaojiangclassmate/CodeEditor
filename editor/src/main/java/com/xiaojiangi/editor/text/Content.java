@@ -1,6 +1,6 @@
 package com.xiaojiangi.editor.text;
 
-import android.util.Log;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 import com.xiaojiangi.editor.widget.Cursor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,24 +34,22 @@ public class Content {
         var currentLine = mList.get(line);
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            switch (c) {
-                case '\n':
-                    if (maxContentLine.length < column)
-                        maxContentLine = currentLine;
-                    line++;
-                    column = 0;
-                    var contentLine = new ContentLine();
-                    currentLine = contentLine;
-                    list.add(contentLine);
-                    break;
-                default:
-                    currentLine.insert(column,c);
-                    column++;
+            if (c == '\n') {
+                maxContentLine(currentLine);
+                line++;
+                column = 0;
+                var contentLine = new ContentLine();
+                currentLine = contentLine;
+                list.add(contentLine);
+            } else {
+                currentLine.insert(column, c);
+                column++;
             }
         }
-        mList.addAll(list);
-        if (maxContentLine.length < currentLine.length())
-            maxContentLine = currentLine;
+        if (mList.size() != 0){
+            mList.addAll(list);
+        }
+        maxContentLine(currentLine);
 
     }
     public void insert(int line, int column, @NonNull CharSequence text) {
@@ -61,29 +58,25 @@ public class Content {
         var currentLine = mList.get(endLine);
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            switch (c) {
-                case '\n':
-                    //在行尾换行
-                     if(currentLine.length == endColumn){
-                         var contentLine =new ContentLine();
-                         mList.add(endLine+1,contentLine);
-                         currentLine =contentLine;
-                     }else {
-                         mList.add(endLine+1,new ContentLine(currentLine.subSequence(endColumn,currentLine.length)));
-                         currentLine.delete(endColumn, currentLine.length);
-                     }
-                     endLine++;
-                     endColumn=0;
-                     if (maxContentLine.length < endColumn)
-                         maxContentLine = currentLine;
-                     break;
-                     default:
-                         currentLine.insert(endColumn,c);
-                         endColumn++;
+            if (c == '\n') {//在行尾换行
+                if (currentLine.length == endColumn) {
+                    var contentLine = new ContentLine();
+                    mList.add(endLine + 1, contentLine);
+                    maxContentLine(currentLine);
+                    currentLine = contentLine;
+                } else {
+                    mList.add(endLine + 1, new ContentLine(currentLine.subSequence(endColumn, currentLine.length)));
+                    currentLine.delete(endColumn, currentLine.length);
+                    maxContentLine(currentLine);
+                }
+                endLine++;
+                endColumn = 0;
+            } else {
+                currentLine.insert(endColumn, c);
+                endColumn++;
             }
         }
-        if (maxContentLine.length < currentLine.length())
-            maxContentLine = currentLine;
+        maxContentLine(currentLine);
         mTextManager.insertText(line,column,endLine,endColumn,text);
         mCursor.set(endLine,endColumn);
     }
@@ -164,9 +157,6 @@ public class Content {
 
     /**
      * 删除光标前的一个字符
-     * @param line
-     * @param column
-     * @return
      */
     public Content delete(int line,int column){
         int startLine =line;
@@ -184,6 +174,7 @@ public class Content {
                 startColumn=lastContentLine.length;
                 startLine--;
                 lastContentLine.append(contentLine);
+                maxContentLine(lastContentLine);
                 remove(line);
                 sb =new StringBuilder("\n");
             }
@@ -199,9 +190,7 @@ public class Content {
     public Content append(int line,char c){
         var contentLine =get(line);
         contentLine.append(c);
-        if (contentLine!=maxContentLine)
-            if (contentLine.length> maxContentLine.length())
-                maxContentLine =contentLine;
+        maxContentLine(contentLine);
         return this;
     }
     public void undo(){
@@ -227,9 +216,19 @@ public class Content {
     }
 
     private void setCursor(int line,int column){
-        if (line>mList.size() && column>get(line).length){
+        if (line>mList.size()){
+            throw new StringIndexOutOfBoundsException("cursor line greater than Content size.");
+        }
+        if (column>get(line).length){
+            throw new StringIndexOutOfBoundsException("cursor column greater than ContentLine length.");
         }
         mCursor.set(line,column);
+    }
+    private void maxContentLine(ContentLine contentLine){
+        if (maxContentLine!=contentLine){
+            if (contentLine.length> maxContentLine.length())
+                maxContentLine =contentLine;
+        }
     }
     @NonNull
     @Override
