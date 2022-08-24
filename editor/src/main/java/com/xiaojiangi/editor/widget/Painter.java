@@ -12,6 +12,7 @@ public class Painter {
     private CodeEditor mEditor;
     private BaseCodeTheme mTheme;
     private Cursor mCursor;
+    private Selection mSelection;
     private final Paint mPaint;
     private final Paint mPaintOther;
     private float spaceWidth;
@@ -28,26 +29,44 @@ public class Painter {
         float lineNumberOffset =mPaint.measureText(String.valueOf(mText.size()))+2*mEditor.mDpUnit;
         float lineNumberBackgroundOffset =lineNumberOffset+numberBackOffset;
         offset =lineNumberBackgroundOffset+textOffset;
-        float start =lineStart*getLineHeight();
-        float end =lineEnd*getLineHeight();
-        if (lineEnd==mText.size())
-            end+=canvas.getHeight();
+        float start = lineStart * getLineHeight();
+        float end = lineEnd * getLineHeight();
+        if (lineEnd == mText.size())
+            end += canvas.getHeight();
         //全局背景
         mEditor.setBackgroundColor(mTheme.getColor(BaseCodeTheme.CODE_BACKGROUND));
         //绘制行号背景
         mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_NUMBER_BACKGROUND));
         mPaintOther.setTextAlign(Paint.Align.LEFT);
-        canvas.drawRect(0f,start,lineNumberBackgroundOffset,end,mPaintOther);
+        canvas.drawRect(0f, start, lineNumberBackgroundOffset, end, mPaintOther);
+
+        //绘制选中
+        if (mSelection.isSelection()) {
+            if (lineStart <= mSelection.getLineStart() && mSelection.getLineEnd() <= lineEnd) {
+                var contentLine = mText.get(mSelection.getLineStart());
+                float left, right;
+                if (contentLine.length() == 0) {
+                    left = offset;
+                    right = spaceWidth + offset;
+                } else {
+                    left = measureText(contentLine, 0, mSelection.getColumnStart()) + offset;
+                    right = measureText(contentLine, 0, mSelection.getColumnEnd()) + offset;
+                }
+                mPaint.setColor(mTheme.getColor(BaseCodeTheme.SELECTION_TEXT_BACKGROUND));
+                canvas.drawRect(left, getLineHeight() * mSelection.getLineStart(), right, getLineHeight() * (mSelection.getLineStart() + 1), mPaint);
+            }
+        }
         //如果光标所在行在可视行中 则绘制光标和当前行背景
-        if (lineStart<=mCursor.line && mCursor.line <=lineEnd){
+        if (lineStart <= mCursor.line && mCursor.line <= lineEnd && !mSelection.isSelection()) {
             //绘制当前行背景
             mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURRENT_LINE_BACKGROUND));
-            float currX =mEditor.getOverScroller().getCurrX();
-            canvas.drawRect(currX,getLineHeight()*mCursor.line, currX+canvas.getWidth(), getLineHeight()*(mCursor.line+1),mPaintOther);
+            float currX = mEditor.getOverScroller().getCurrX();
+            canvas.drawRect(currX, getLineHeight() * mCursor.line, currX + canvas.getWidth(), getLineHeight() * (mCursor.line + 1), mPaintOther);
+
             //绘制光标
-            if (mEditor.isCursor()){
-                var contentLine =mText.get(mCursor.line);
-                int tab=0;
+            if (mEditor.isCursor()) {
+                var contentLine = mText.get(mCursor.line);
+                int tab = 0;
                 for (int i = 0; i < mCursor.column; i++) {
                     if (contentLine.charAt(i)=='\t')
                         tab+=1;
@@ -91,8 +110,9 @@ public class Painter {
     }
     public Painter(CodeEditor codeEditor) {
         mEditor =codeEditor;
-        mTheme =codeEditor.getTheme();
-        mPaint =new Paint();
+        mTheme = codeEditor.getTheme();
+        mSelection = codeEditor.getSelection();
+        mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaintOther =new Paint();
         mPaintOther.setAntiAlias(true);
@@ -128,17 +148,24 @@ public class Painter {
     public float getPaintSize(){
         return mPaint.getTextSize();
     }
-    public void setPaintTypeface(Typeface typeface){
+
+    public void setPaintTypeface(Typeface typeface) {
         mPaint.setTypeface(typeface);
         mPaintOther.setTypeface(typeface);
-        spaceWidth =mPaint.measureText(" ");
+        spaceWidth = mPaint.measureText(" ");
         setTabCount(tabCount);
         mEditor.invalidate();
     }
-    public float measureText(String text){
+
+    public float measureText(String text) {
         return mPaint.measureText(text);
     }
-    public float getOffset(){
+
+    public float measureText(CharSequence text, int start, int end) {
+        return mPaint.measureText(text, start, end);
+    }
+
+    public float getOffset() {
         return offset;
     }
 }

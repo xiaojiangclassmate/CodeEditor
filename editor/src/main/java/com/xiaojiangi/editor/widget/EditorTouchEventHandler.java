@@ -1,20 +1,25 @@
 package com.xiaojiangi.editor.widget;
 
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.OverScroller;
 
-public class EditorTouchEventHandler implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener{
-    private CodeEditor mEditor;
-    private OverScroller mOverScroller;
+public class EditorTouchEventHandler implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+    private final CodeEditor mEditor;
+    private final OverScroller mOverScroller;
+    private final Selection mSelection;
+
     public EditorTouchEventHandler(CodeEditor codeEditor) {
-        mEditor =codeEditor;
-        mOverScroller =new OverScroller(mEditor.getContext());
+        mEditor = codeEditor;
+        mOverScroller = new OverScroller(mEditor.getContext());
+        mSelection = mEditor.getSelection();
     }
 
-    public boolean onTouchEvent(MotionEvent event){
+    public boolean onTouchEvent(MotionEvent event) {
         return true;
     }
+
     //触摸
     @Override
     public boolean onDown(MotionEvent e) {
@@ -25,7 +30,9 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
     //用户轻触触摸屏，还没有松开或拖动
     @Override
     public void onShowPress(MotionEvent e) {
-
+        if (!mSelection.isSelection()) {
+            select(e);
+        }
     }
 
     //轻触松开
@@ -45,16 +52,19 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
             }else {
                 columnOffset+=mEditor.getPainter().measureText(String.valueOf(c));
             }
-            if (e.getX()+mOverScroller.getCurrX()<columnOffset){
-                column=i;
+            if (e.getX() + mOverScroller.getCurrX() < columnOffset) {
+                column = i;
                 break;
             }
 
         }
-        if (e.getX()+mOverScroller.getCurrX()>columnOffset){
-            column =contentLine.length();
+        if (e.getX() + mOverScroller.getCurrX() > columnOffset) {
+            column = contentLine.length();
         }
-        mEditor.getCursor().set(line,column);
+        mEditor.getCursor().set(line, column);
+        if (mSelection.isSelection()) {
+            mSelection.restart();
+        }
         mEditor.invalidate();
         return true;
     }
@@ -90,6 +100,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         mOverScroller.fling(mEditor.getScrollX(),mEditor.getScrollY(),
                 -(int) velocityX,-(int) velocityY,
                 0, mEditor.getMaxX(), 0,mEditor.getMaxY());
+
         mEditor.invalidate();
         return true;
     }
@@ -102,16 +113,80 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
+        if (!mSelection.isSelection()) {
+            select(e);
+        }
         return true;
     }
 
     @Override
     public boolean onDoubleTapEvent(MotionEvent e) {
+
         return true;
     }
 
     private void select(MotionEvent e) {
-        Painter painter = mEditor.getPainter();
+        int line = (int) Math.min(mEditor.getContent().size() - 1, (e.getY() + mOverScroller.getCurrY()) / mEditor.getLineHeight());
+        var contentLine = mEditor.getContent().get(line);
+        //该行为空
+        if (contentLine.length() == 0)
+            return;
+        int column = 0;
+        float columnOffset = mEditor.getPainter().getOffset();
+
+        //计算列
+        for (int i = 0; i < contentLine.length(); i++) {
+            char c = contentLine.charAt(i);
+            if (c == '\t') {
+                columnOffset += mEditor.getPainter().getTabWidth();
+            } else {
+                columnOffset += mEditor.getPainter().measureText(String.valueOf(c));
+            }
+            if (e.getX() + mOverScroller.getCurrX() < columnOffset) {
+                column = i;
+                break;
+            }
+        }
+        if (e.getX() + mOverScroller.getCurrX() > columnOffset) {
+            if (contentLine.length() != 0) {
+                column = contentLine.length() - 1;
+            } else {
+                column = 0;
+            }
+        }
+        int leftPos = 0;
+        int rightPos = contentLine.length();
+        if (isSymbol(contentLine.charAt(column))) {
+            rightPos = column + 1;
+            leftPos = column;
+            mSelection.set(line, leftPos, line, rightPos);
+            mEditor.invalidate();
+            return;
+        }
+        for (int i = column; i > 0; i--) {
+            char c = contentLine.charAt(i);
+            if (isSymbol(c)) {
+                leftPos = i + 1;
+                break;
+            }
+        }
+        //right
+        for (int i = column; i < contentLine.length(); i++) {
+            char c = contentLine.charAt(i);
+            if (isSymbol(c)) {
+                rightPos = i;
+                break;
+            }
+        }
+        if (leftPos != rightPos) {
+            mSelection.set(line, leftPos, line, rightPos);
+            mEditor.invalidate();
+        }
+    }
+
+    private boolean isSymbol(char c) {
+        // 数字 小数点 大写字母 小写字母
+        return !((57 >= (int) c && (int) c >= 48) || (int) c == 46 || (90 >= (int) c && (int) c >= 65) || (122 >= (int) c && (int) c >= 97));
 
     }
 

@@ -14,7 +14,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(_binding.root)
-        StatFs("").toString()
         setSupportActionBar(_binding.toolbar)
         _binding.editor.apply {
             text = String(assets.open("View.java").readBytes())

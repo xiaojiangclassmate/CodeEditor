@@ -11,10 +11,11 @@ public class BaseCodeTheme {
     public static final int CURRENT_LINE_BACKGROUND = 5;    //当前行背景
     public static final int CURSOR_COLOR = 6;    //光标颜色
     public static final int TEXT_COLOR = 7; //文本颜色
+    public static final int SELECTION_TEXT_BACKGROUND = 8; //选择背景颜色
 
 
-    private static final int MIN=1;
-    private static final int MAX=7;
+    private static final int MIN = 1;
+    private static final int MAX = 8;
 
     protected void apply(int type){
         int color=getColor(type);
@@ -32,13 +33,16 @@ public class BaseCodeTheme {
                 color =0xfffcfaed;
                 break;
             case LINE_COLOR:
-                color =0xffd4d4d4;
+                color = 0xffd4d4d4;
                 break;
             case CURSOR_COLOR:
-                color =0xff000000;
+                color = 0xff000000;
                 break;
             case TEXT_COLOR:
-                color =0xff070712;
+                color = 0xff070712;
+                break;
+            case SELECTION_TEXT_BACKGROUND:
+                color = 0xffa6d2ff;
                 break;
         }
         setColor(type,color);

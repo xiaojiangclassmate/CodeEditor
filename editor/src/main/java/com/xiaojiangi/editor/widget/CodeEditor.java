@@ -37,6 +37,7 @@ public class CodeEditor extends View {
     private GestureDetector mGestureDetector;
     private EditorTouchEventHandler mEventHandler;
     private OverScroller mOverScroller;
+    private Selection mSelection;
     public CodeEditor(Context context) {this(context,null);}
     public CodeEditor(Context context, @Nullable AttributeSet attrs) {this(context, attrs,0);}
     public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {this(context, attrs, defStyleAttr,0);}
@@ -51,13 +52,14 @@ public class CodeEditor extends View {
         mDpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, Resources.getSystem().getDisplayMetrics()) / 10F;
         mInputConnection =new EditorInputConnection(this);
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        mEventHandler =new EditorTouchEventHandler(this);
+        mSelection = new Selection();
+        mEventHandler = new EditorTouchEventHandler(this);
         mOverScroller =mEventHandler.getOverScroller();
         mGestureDetector = new GestureDetector(getContext(), mEventHandler);
         mGestureDetector.setOnDoubleTapListener(mEventHandler);
         mText =new Content();
-        mTheme =new BaseCodeTheme();
-        mPainter =new Painter(this);
+        mTheme = new BaseCodeTheme();
+        mPainter = new Painter(this);
         setCursor(true);
         setTextSize(18);
         setText("");
@@ -149,7 +151,8 @@ public class CodeEditor extends View {
             text="";
         mText =new Content(text);
         mCursor =mText.getCursor();
-        mOverScroller.startScroll(0,0,0,0);
+        mOverScroller.startScroll(0, 0, 0, 0);
+        mSelection.restart();
         invalidate();
     }
     public void commitText(CharSequence text){
@@ -210,19 +213,28 @@ public class CodeEditor extends View {
     public BaseCodeTheme getTheme(){
         return mTheme;
     }
-    public void setTheme(BaseCodeTheme theme){
-        mTheme =theme;
+
+    public void setTheme(BaseCodeTheme theme) {
+        mTheme = theme;
     }
-    public Content getContent(){
+
+    public Content getContent() {
         return mText;
     }
-    protected OverScroller getOverScroller(){
+
+    protected OverScroller getOverScroller() {
         return mOverScroller;
     }
-    public int getMaxX(){
-        return (int)Math.max(0, mPainter.getOffset()+mPainter.measureText(mText.getMaxContentLine().toString()) - getWidth()/2f );
+
+    public Selection getSelection() {
+        return mSelection;
     }
-    public int getMaxY(){
-        return (int)Math.max(0, (mPainter.getLineHeight()*mText.size()- (getHeight()/2f)));
+
+    public int getMaxX() {
+        return (int) Math.max(0, mPainter.getOffset() + mPainter.measureText(mText.getMaxContentLine().toString()) - getWidth() / 2f);
+    }
+
+    public int getMaxY() {
+        return (int) Math.max(0, (mPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
     }
 }
