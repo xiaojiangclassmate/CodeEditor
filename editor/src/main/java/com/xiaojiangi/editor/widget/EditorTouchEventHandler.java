@@ -186,7 +186,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
 
     private boolean isSymbol(char c) {
         // 数字 小数点 大写字母 小写字母
-        return !((57 >= (int) c && (int) c >= 48) || (int) c == 46 || (90 >= (int) c && (int) c >= 65) || (122 >= (int) c && (int) c >= 97));
+        return !((57 >= (int) c && (int) c >= 48) || (int) c == 46 || (int) c == 95 || (90 >= (int) c && (int) c >= 65) || (122 >= (int) c && (int) c >= 97));
 
     }
 
