@@ -12,10 +12,10 @@ public class BaseCodeTheme {
     public static final int CURSOR_COLOR = 6;    //光标颜色
     public static final int TEXT_COLOR = 7; //文本颜色
     public static final int SELECTION_TEXT_BACKGROUND = 8; //选择背景颜色
-
+    public static final int CURSOR_STYLE_COLOR = 9;
 
     private static final int MIN = 1;
-    private static final int MAX = 8;
+    private static final int MAX = 9;
 
     protected void apply(int type){
         int color=getColor(type);
@@ -43,6 +43,9 @@ public class BaseCodeTheme {
                 break;
             case SELECTION_TEXT_BACKGROUND:
                 color = 0xffa6d2ff;
+                break;
+            case CURSOR_STYLE_COLOR:
+                color = 0xff2962ff;
                 break;
         }
         setColor(type,color);

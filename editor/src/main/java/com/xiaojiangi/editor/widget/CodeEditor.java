@@ -38,6 +38,7 @@ public class CodeEditor extends View {
     private EditorTouchEventHandler mEventHandler;
     private OverScroller mOverScroller;
     private Selection mSelection;
+    private HandShankStyle handShankStyle;
     public CodeEditor(Context context) {this(context,null);}
     public CodeEditor(Context context, @Nullable AttributeSet attrs) {this(context, attrs,0);}
     public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {this(context, attrs, defStyleAttr,0);}
@@ -59,6 +60,7 @@ public class CodeEditor extends View {
         mGestureDetector.setOnDoubleTapListener(mEventHandler);
         mText =new Content();
         mTheme = new BaseCodeTheme();
+        handShankStyle = new HandShankStyle(getContext());
         mPainter = new Painter(this);
         setCursor(true);
         setTextSize(18);
@@ -228,6 +230,10 @@ public class CodeEditor extends View {
 
     public Selection getSelection() {
         return mSelection;
+    }
+
+    public HandShankStyle getHandShankStyle() {
+        return handShankStyle;
     }
 
     public int getMaxX() {

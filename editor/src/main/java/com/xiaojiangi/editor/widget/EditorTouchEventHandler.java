@@ -1,6 +1,5 @@
 package com.xiaojiangi.editor.widget;
 
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.OverScroller;

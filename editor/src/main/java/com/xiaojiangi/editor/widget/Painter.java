@@ -5,7 +5,9 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.Log;
+import android.util.TypedValue;
 
+import com.xiaojiangi.editor.R;
 import com.xiaojiangi.editor.theme.BaseCodeTheme;
 
 public class Painter {
@@ -13,6 +15,7 @@ public class Painter {
     private BaseCodeTheme mTheme;
     private Cursor mCursor;
     private Selection mSelection;
+    private HandShankStyle handShankStyle;
     private final Paint mPaint;
     private final Paint mPaintOther;
     private float spaceWidth;
@@ -54,6 +57,14 @@ public class Painter {
                 }
                 mPaint.setColor(mTheme.getColor(BaseCodeTheme.SELECTION_TEXT_BACKGROUND));
                 canvas.drawRect(left, getLineHeight() * mSelection.getLineStart(), right, getLineHeight() * (mSelection.getLineStart() + 1), mPaint);
+                //绘制选中线
+                mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURSOR_COLOR));
+                mPaintOther.setStrokeWidth(4f);
+                canvas.drawLine(left, getLineHeight() * mSelection.getLineStart(), left, getLineHeight() * (mSelection.getLineStart() + 1), mPaintOther);
+                canvas.drawLine(right, getLineHeight() * mSelection.getLineEnd(), right, getLineHeight() * (mSelection.getLineEnd() + 1), mPaintOther);
+                //绘制选中手柄
+                handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), left, getLineHeight() * (mSelection.getLineStart() + 1));
+                handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), right, getLineHeight() * (mSelection.getLineEnd() + 1));
             }
         }
         //如果光标所在行在可视行中 则绘制光标和当前行背景
@@ -112,6 +123,7 @@ public class Painter {
         mEditor =codeEditor;
         mTheme = codeEditor.getTheme();
         mSelection = codeEditor.getSelection();
+        handShankStyle = codeEditor.getHandShankStyle();
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaintOther =new Paint();
