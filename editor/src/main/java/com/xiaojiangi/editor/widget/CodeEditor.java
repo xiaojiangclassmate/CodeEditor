@@ -60,7 +60,7 @@ public class CodeEditor extends View {
         mGestureDetector.setOnDoubleTapListener(mEventHandler);
         mText =new Content();
         mTheme = new BaseCodeTheme();
-        handShankStyle = new HandShankStyle(getContext());
+        handShankStyle = new HandShankStyle(this);
         mPainter = new Painter(this);
         setCursor(true);
         setTextSize(18);

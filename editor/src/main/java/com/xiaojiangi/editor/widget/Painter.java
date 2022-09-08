@@ -42,12 +42,14 @@ public class Painter {
         mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.LINE_NUMBER_BACKGROUND));
         mPaintOther.setTextAlign(Paint.Align.LEFT);
         canvas.drawRect(0f, start, lineNumberBackgroundOffset, end, mPaintOther);
-
+        //选中时,left right 为选中文字的X轴
+        //非选中时, left为光标x轴 ,right为y轴
+        float left, right;
+        left = right = 0f;
         //绘制选中
         if (mSelection.isSelection()) {
             if (lineStart <= mSelection.getLineStart() && mSelection.getLineEnd() <= lineEnd) {
                 var contentLine = mText.get(mSelection.getLineStart());
-                float left, right;
                 if (contentLine.length() == 0) {
                     left = offset;
                     right = spaceWidth + offset;
@@ -57,14 +59,7 @@ public class Painter {
                 }
                 mPaint.setColor(mTheme.getColor(BaseCodeTheme.SELECTION_TEXT_BACKGROUND));
                 canvas.drawRect(left, getLineHeight() * mSelection.getLineStart(), right, getLineHeight() * (mSelection.getLineStart() + 1), mPaint);
-                //绘制选中线
-                mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURSOR_COLOR));
-                mPaintOther.setStrokeWidth(4f);
-                canvas.drawLine(left, getLineHeight() * mSelection.getLineStart(), left, getLineHeight() * (mSelection.getLineStart() + 1), mPaintOther);
-                canvas.drawLine(right, getLineHeight() * mSelection.getLineEnd(), right, getLineHeight() * (mSelection.getLineEnd() + 1), mPaintOther);
-                //绘制选中手柄
-                handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), left, getLineHeight() * (mSelection.getLineStart() + 1));
-                handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), right, getLineHeight() * (mSelection.getLineEnd() + 1));
+
             }
         }
         //如果光标所在行在可视行中 则绘制光标和当前行背景
@@ -80,17 +75,20 @@ public class Painter {
                 int tab = 0;
                 for (int i = 0; i < mCursor.column; i++) {
                     if (contentLine.charAt(i)=='\t')
-                        tab+=1;
+                        tab += 1;
                 }
                 int column = mCursor.column;
-                float cursorOffset= mPaint.measureText(contentLine,0,column)+offset;
+                float cursorOffset = mPaint.measureText(contentLine, 0, column) + offset;
                 if (tab != 0) {
-                    cursorOffset-=tab*mPaint.measureText("\t");
+                    cursorOffset -= tab * mPaint.measureText("\t");
                 }
                 mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURSOR_COLOR));
-                mPaintOther.setStrokeWidth(5);
+                mPaintOther.setStrokeWidth(4f);
                 mPaintOther.setTextAlign(Paint.Align.CENTER);
-                canvas.drawLine(cursorOffset,mCursor.line*getLineHeight(),cursorOffset,(mCursor.line+1)*getLineHeight(),mPaintOther);
+                left = cursorOffset;
+                right = (mCursor.line + 1) * getLineHeight();
+                canvas.drawLine(cursorOffset, mCursor.line * getLineHeight(), cursorOffset, right, mPaintOther);
+
             }
 
         }
@@ -108,15 +106,30 @@ public class Painter {
             mPaint.setTextAlign(Paint.Align.LEFT);
             float currentOffset=offset;
             var contentLine =mText.get(i);
-            int offset=0;
-            for (int j = 0; j <contentLine.length() ; j++) {
-                if (contentLine.charAt(j)=='\t') {
-                    canvas.drawText(contentLine,0,j+1,currentOffset,textBaseLine,mPaint);
-                    currentOffset +=tabWidth+mPaint.measureText(contentLine,0,j+1);
-                    offset=j;
+            int offset = 0;
+            for (int j = 0; j < contentLine.length(); j++) {
+                if (contentLine.charAt(j) == '\t') {
+                    canvas.drawText(contentLine, 0, j + 1, currentOffset, textBaseLine, mPaint);
+                    currentOffset += tabWidth + mPaint.measureText(contentLine, 0, j + 1);
+                    offset = j;
                 }
             }
-            canvas.drawText(contentLine,offset,contentLine.length(),currentOffset,textBaseLine,mPaint);
+            canvas.drawText(contentLine, offset, contentLine.length(), currentOffset, textBaseLine, mPaint);
+        }
+        if (mSelection.isSelection()) {
+            //绘制选中线
+            mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURSOR_COLOR));
+            mPaintOther.setStrokeWidth(4f);
+            float startLineHeight = getLineHeight() * mSelection.getLineStart();
+            float endLineHeight = getLineHeight() * mSelection.getLineEnd();
+            canvas.drawLine(left, startLineHeight, left, startLineHeight + getLineHeight(), mPaintOther);
+            canvas.drawLine(right, endLineHeight, right, endLineHeight + getLineHeight(), mPaintOther);
+            handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), left, startLineHeight + getLineHeight(), right, endLineHeight + getLineHeight());
+        } else {
+            if (lineStart <= mCursor.line && mCursor.line <= lineEnd) {
+                handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), left, right);
+            }
+
         }
     }
     public Painter(CodeEditor codeEditor) {
