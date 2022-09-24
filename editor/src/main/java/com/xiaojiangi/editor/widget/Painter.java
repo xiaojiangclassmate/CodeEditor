@@ -44,8 +44,9 @@ public class Painter {
         canvas.drawRect(0f, start, lineNumberBackgroundOffset, end, mPaintOther);
         //选中时,left right 为选中文字的X轴
         //非选中时, left为光标x轴 ,right为y轴
-        float left, right;
-        left = right = 0f;
+        float left, right, cursorX, cursorY;
+        left = right = cursorX = cursorY = 0f;
+
         //绘制选中
         if (mSelection.isSelection()) {
             if (lineStart <= mSelection.getLineStart() && mSelection.getLineEnd() <= lineEnd) {
@@ -85,9 +86,9 @@ public class Painter {
                 mPaintOther.setColor(mTheme.getColor(BaseCodeTheme.CURSOR_COLOR));
                 mPaintOther.setStrokeWidth(4f);
                 mPaintOther.setTextAlign(Paint.Align.CENTER);
-                left = cursorOffset;
-                right = (mCursor.line + 1) * getLineHeight();
-                canvas.drawLine(cursorOffset, mCursor.line * getLineHeight(), cursorOffset, right, mPaintOther);
+                cursorX = cursorOffset;
+                cursorY = (mCursor.line + 1) * getLineHeight();
+                canvas.drawLine(cursorOffset, mCursor.line * getLineHeight(), cursorOffset, cursorY, mPaintOther);
 
             }
 
@@ -127,7 +128,7 @@ public class Painter {
             handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), left, startLineHeight + getLineHeight(), right, endLineHeight + getLineHeight());
         } else {
             if (lineStart <= mCursor.line && mCursor.line <= lineEnd) {
-                handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), left, right);
+                handShankStyle.draw(canvas, mTheme.getColor(BaseCodeTheme.CURSOR_STYLE_COLOR), cursorX, cursorY);
             }
 
         }

@@ -54,13 +54,13 @@ public class CodeEditor extends View {
         mInputConnection =new EditorInputConnection(this);
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         mSelection = new Selection();
+        handShankStyle = new HandShankStyle(this);
         mEventHandler = new EditorTouchEventHandler(this);
         mOverScroller =mEventHandler.getOverScroller();
         mGestureDetector = new GestureDetector(getContext(), mEventHandler);
         mGestureDetector.setOnDoubleTapListener(mEventHandler);
         mText =new Content();
         mTheme = new BaseCodeTheme();
-        handShankStyle = new HandShankStyle(this);
         mPainter = new Painter(this);
         setCursor(true);
         setTextSize(18);

@@ -1,5 +1,9 @@
 package com.xiaojiangi.editor.widget;
 
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Region;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.OverScroller;
@@ -8,11 +12,13 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
     private final CodeEditor mEditor;
     private final OverScroller mOverScroller;
     private final Selection mSelection;
+    private final HandShankStyle mHandShankStyle;
 
     public EditorTouchEventHandler(CodeEditor codeEditor) {
         mEditor = codeEditor;
         mOverScroller = new OverScroller(mEditor.getContext());
         mSelection = mEditor.getSelection();
+        mHandShankStyle = mEditor.getHandShankStyle();
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -31,6 +37,17 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
     public void onShowPress(MotionEvent e) {
         if (!mSelection.isSelection()) {
             select(e);
+        } else {
+            int x = (int) e.getX() + mOverScroller.getCurrX();
+            int y = (int) e.getY() + mOverScroller.getCurrY();
+            if (mEditor.getHandShankStyle().isContain(x, y)) {
+                if (mEditor.getHandShankStyle().isLeftHandShank(x, y)) {
+                    Log.d("Editor HandShank", "LEFT");
+                }
+                if (mEditor.getHandShankStyle().isRightHandShank(x, y)) {
+                    Log.d("Editor HandShank", "RIGHT");
+                }
+            }
         }
     }
 
@@ -63,6 +80,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         mEditor.getCursor().set(line, column);
         if (mSelection.isSelection()) {
             mSelection.restart();
+            mHandShankStyle.restart();
         }
         mEditor.invalidate();
         return true;
@@ -188,6 +206,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         return !((57 >= (int) c && (int) c >= 48) || (int) c == 46 || (int) c == 95 || (90 >= (int) c && (int) c >= 65) || (122 >= (int) c && (int) c >= 97));
 
     }
+
 
     public OverScroller getOverScroller() {
         return mOverScroller;
