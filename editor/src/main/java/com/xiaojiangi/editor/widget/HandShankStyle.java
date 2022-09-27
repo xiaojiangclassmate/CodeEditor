@@ -12,6 +12,7 @@ import android.graphics.Region;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.TypedValue;
+import android.widget.Toast;
 
 import com.xiaojiangi.editor.R;
 
@@ -25,9 +26,7 @@ public class HandShankStyle {
     private final Paint paint;
     private final RectF leftRectF;
     private final RectF rightRectF;
-    private Canvas canvas;
-    private RectF r = new RectF();
-    private CodeEditor codeEditor;
+    private final CodeEditor codeEditor;
 
     @SuppressLint("UseCompatLoadingForDrawables")
     public HandShankStyle(CodeEditor codeEditor) {
@@ -58,7 +57,6 @@ public class HandShankStyle {
     }
 
     public void draw(Canvas canvas, int color, float startX, float startY, float endX, float endY) {
-        this.canvas = canvas;
         paint.setColor(color);
         float radius = size / 2f;
         float leftX = startX - radius;
@@ -70,8 +68,6 @@ public class HandShankStyle {
         canvas.drawCircle(rightX, endY + radius, radius, paint);
         canvas.drawRect(rightX - radius, endY, rightX, endY + radius, paint);
         rightRectF.set(rightX + radius, endY, endX, endY + radius + radius);
-        canvas.drawRect(leftRectF, paint);
-        canvas.drawRect(rightRectF, paint);
 
     }
 
@@ -79,23 +75,37 @@ public class HandShankStyle {
         this.alpha = alpha;
     }
 
-    public boolean isContain(int x, int y) {
+    public boolean isContain(float x, float y) {
         if (isRightHandShank(x, y))
             return true;
         return isLeftHandShank(x, y);
     }
 
-    public boolean isLeftHandShank(int x, int y) {
-        return leftRectF.contains(x, y);
+    public boolean isLeftHandShank(float x, float y) {
+        return Rect.contain(leftRectF, x, y, codeEditor, Rect.LEFT);
     }
 
-    public boolean isRightHandShank(int x, int y) {
-        return rightRectF.contains(x, y);
+    public boolean isRightHandShank(float x, float y) {
+        return Rect.contain(rightRectF, x, y, codeEditor, Rect.RIGHT);
     }
 
     public void restart() {
         leftRectF.setEmpty();
         rightRectF.setEmpty();
 
+    }
+
+    static class Rect {
+        final static int LEFT = 1;
+        final static int RIGHT = 2;
+
+        public static boolean contain(RectF rect, float x, float y, CodeEditor codeEditor, int type) {
+            float dp = codeEditor.mDpUnit * 10;
+            if (type == LEFT) {
+                return (rect.left - dp) <= x && x <= (rect.right + dp) && rect.top <= y && y <= rect.bottom;
+            } else {
+                return (rect.left + dp) >= x && x >= (rect.right - dp) && rect.bottom >= y && y >= rect.top;
+            }
+        }
     }
 }
