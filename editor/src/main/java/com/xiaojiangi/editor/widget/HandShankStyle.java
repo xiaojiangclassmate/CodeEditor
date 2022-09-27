@@ -22,7 +22,7 @@ public class HandShankStyle {
     private final int width;
     private float scale = 1.0f;
     private int alpha = 255;
-    private int size;
+    private final int size;
     private final Paint paint;
     private final RectF leftRectF;
     private final RectF rightRectF;
