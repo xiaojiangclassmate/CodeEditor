@@ -16,12 +16,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.OverScroller;
-import android.widget.Toast;
-
 import androidx.annotation.Nullable;
-
 import com.xiaojiangi.editor.text.Content;
-import com.xiaojiangi.editor.text.TextManager;
 import com.xiaojiangi.editor.theme.BaseCodeTheme;
 
 public class CodeEditor extends View {
@@ -217,7 +213,7 @@ public class CodeEditor extends View {
     }
 
     public void setTheme(BaseCodeTheme theme) {
-        mTheme = theme;
+        this.mTheme = theme;
     }
 
     public Content getContent() {

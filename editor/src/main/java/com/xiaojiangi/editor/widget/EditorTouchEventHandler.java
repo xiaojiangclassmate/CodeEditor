@@ -40,12 +40,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         } else {
             float x = e.getX() + mOverScroller.getCurrX();
             float y = e.getY() + mOverScroller.getCurrY();
-            if (mEditor.getHandShankStyle().isRightHandShank(x, y)) {
-                Log.d("Editor", "right");
-            }
-            if (mEditor.getHandShankStyle().isLeftHandShank(x, y)) {
-                Log.d("Editor", "LEFT");
-            }
+
         }
     }
 
