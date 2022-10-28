@@ -1,21 +1,26 @@
 package com.xiaojiangi.editor.text;
 
+import android.text.GetChars;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Arrays;
+import java.util.Objects;
 
-public class ContentLine implements CharSequence {
+public class ContentLine implements CharSequence, GetChars {
     char[] value;
     int length;
+
     public ContentLine() {
         this(null);
     }
+
     public ContentLine(@Nullable CharSequence text) {
-        if (text==null)
-            text="";
-        length= text.length();
-        value =new char[length+16];
+        if (text == null)
+            text = "";
+        length = text.length();
+        value = new char[length + 16];
         for (int i = 0; i < text.length(); i++) {
             value[i] = text.charAt(i);
         }
@@ -128,6 +133,28 @@ public class ContentLine implements CharSequence {
     @NonNull
     @Override
     public String toString() {
-        return new String(value,0,length);
+        return new String(value, 0, length);
     }
+
+    @Override
+    public void getChars(int i, int i1, char[] chars, int i2) {
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ContentLine that = (ContentLine) o;
+        return length == that.length && Arrays.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(length);
+        result = 31 * result + Arrays.hashCode(value);
+        return result;
+    }
+
+
 }

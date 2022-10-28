@@ -4,10 +4,11 @@ import android.util.Log;
 import android.view.inputmethod.BaseInputConnection;
 
 public class EditorInputConnection extends BaseInputConnection {
-    private CodeEditor mEditor;
+    private final CodeEditor mEditor;
+
     public EditorInputConnection(CodeEditor targetView) {
         super(targetView, true);
-        mEditor =targetView;
+        mEditor = targetView;
     }
 
     @Override

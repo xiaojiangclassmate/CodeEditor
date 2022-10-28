@@ -2,8 +2,6 @@ package com.xiaojiangi.editor.text;
 
 
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -16,7 +14,7 @@ import java.util.List;
 public class Content {
     private List<ContentLine> mList;
     private ContentLine maxContentLine;
-    private TextManager mTextManager;
+    private final TextManager mTextManager;
     private Cursor mCursor;
     public Content() {
         this(null);
