@@ -3,7 +3,6 @@ package com.xiaojiangi.simple.code
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.StatFs
 import android.view.Menu
 import android.view.MenuItem
 import com.xiaojiangi.simple.code.databinding.ActivityMainBinding

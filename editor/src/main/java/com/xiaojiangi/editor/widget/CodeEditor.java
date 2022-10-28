@@ -214,6 +214,8 @@ public class CodeEditor extends View {
 
     public void setTheme(BaseCodeTheme theme) {
         this.mTheme = theme;
+        mPainter = new Painter(this);
+        invalidate();
     }
 
     public Content getContent() {

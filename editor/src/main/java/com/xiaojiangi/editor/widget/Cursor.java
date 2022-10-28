@@ -38,16 +38,19 @@ public final class Cursor {
             column++;
     }
     public void dpadUp(){
-        if (line!=0)
+        if (line != 0) {
             line--;
-            if (column>mText.get(line).length())
-                column =mText.get(line).length();
+            if (column > mText.get(line).length())
+                column = mText.get(line).length();
+        }
+
     }
     public void dpadDown(){
-        if (line!=mText.size()-1)
+        if (line != mText.size() - 1) {
             line++;
-            if (column>mText.get(line).length())
-                column =mText.get(line).length();
+            if (column > mText.get(line).length())
+                column = mText.get(line).length();
+        }
     }
     public Cursor(Content content) {
         mText =content;

@@ -11,11 +11,10 @@ import com.xiaojiangi.editor.R;
 import com.xiaojiangi.editor.theme.BaseCodeTheme;
 
 public class Painter {
-    private CodeEditor mEditor;
-    private BaseCodeTheme mTheme;
-    private Cursor mCursor;
-    private Selection mSelection;
-    private HandShankStyle handShankStyle;
+    private final CodeEditor mEditor;
+    private final BaseCodeTheme mTheme;
+    private final Selection mSelection;
+    private final HandShankStyle handShankStyle;
     private final Paint mPaint;
     private final Paint mPaintOther;
     private float spaceWidth;
@@ -24,10 +23,11 @@ public class Painter {
     private final float numberBackOffset;
     private final float textOffset;
     private float offset;
-    protected void onDraw(Canvas canvas){
-        var mText=mEditor.getContent();
-        mCursor = mText.getCursor();
-        int lineStart =Math.max((int)(mEditor.getOverScroller().getCurrY() /getLineHeight()),0);
+
+    protected void onDraw(Canvas canvas) {
+        var mText = mEditor.getContent();
+        var mCursor = mText.getCursor();
+        int lineStart = Math.max((int) (mEditor.getOverScroller().getCurrY() / getLineHeight()), 0);
         int lineEnd =Math.min(mText.size(),(int) ((mEditor.getHeight()+mEditor.getOverScroller().getCurrY()) /getLineHeight() +1));
         float lineNumberOffset =mPaint.measureText(String.valueOf(mText.size()))+2*mEditor.mDpUnit;
         float lineNumberBackgroundOffset =lineNumberOffset+numberBackOffset;
@@ -190,7 +190,6 @@ public class Painter {
     public float measureText(CharSequence text, int start, int end) {
         return mPaint.measureText(text, start, end);
     }
-
     public float getOffset() {
         return offset;
     }

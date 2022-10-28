@@ -2,8 +2,6 @@ package com.xiaojiangi.editor.text;
 
 
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -16,21 +14,21 @@ import java.util.List;
 public class Content {
     private List<ContentLine> mList;
     private ContentLine maxContentLine;
-    private TextManager mTextManager;
+    private final TextManager mTextManager;
     private Cursor mCursor;
+
     public Content() {
         this(null);
     }
 
     public Content(@Nullable CharSequence text) {
-        mList =new ArrayList<>();
+        mList = new ArrayList<>();
         mCursor = new Cursor(this);
         mTextManager =new TextManager();
         maxContentLine =new ContentLine();
         mList.add(maxContentLine);
         if (text==null)
             text="";
-        
         int line=0;
         int column=0;
         var list = new LinkedList<ContentLine>();
@@ -175,26 +173,6 @@ public class Content {
         setCursor(startLine, startColumn);
         return this;
     }
-    public Content delete(Cursor cursor){
-        var contentLine =get(cursor.line);
-        if (contentLine.length==0){
-            mList.remove(cursor.line);
-            cursor.line--;
-            cursor.column =get(cursor.line).length;
-            return this;
-        }
-        if (cursor.column == 0 && cursor.line != 0){
-            int len =contentLine.length;
-            get(cursor.line-1).append(contentLine);
-            remove(cursor.line);
-            cursor.line--;
-            cursor.column =get(cursor.line).length-len;
-            return this;
-        }
-        contentLine.delete(cursor.column-1,cursor.column);
-        cursor.column--;
-        return this;
-    }
 
     /**
      * 删除光标前的一个字符
@@ -224,29 +202,44 @@ public class Content {
             get(line).delete(startColumn-1,startColumn);
             startColumn--;
         }
-        mTextManager.deleteStack(startLine,startColumn,line,column,sb);
-        setCursor(startLine,startColumn);
+        mTextManager.deleteStack(startLine, startColumn, line, column, sb);
+        setCursor(startLine, startColumn);
         return this;
     }
-    public Content append(int line,char c){
-        var contentLine =get(line);
+
+    public Content append(int line, char c) {
+        var contentLine = get(line);
         contentLine.append(c);
         maxContentLine(contentLine);
         return this;
     }
-    public void undo(){
+
+    public Content append(int line, @Nullable CharSequence text) {
+        if (text == null)
+            return this;
+        var contentLine = get(line);
+        contentLine.append(text);
+        maxContentLine(contentLine);
+        return this;
+    }
+
+    public void undo() {
         mTextManager.undo(this);
     }
-    public void redo(){
+
+    public void redo() {
         mTextManager.redo(this);
     }
-    public Cursor getCursor(){
+
+    public Cursor getCursor() {
         return mCursor;
     }
     public int size(){
         return mList.size();
     }
-    public ContentLine get(int pos){
+    public ContentLine get(int pos) {
+        if (pos > mList.size())
+            throw new ArrayIndexOutOfBoundsException();
         return mList.get(pos);
     }
     public void remove(int pos){
@@ -271,6 +264,8 @@ public class Content {
                 maxContentLine =contentLine;
         }
     }
+
+
     @NonNull
     @Override
     public String toString() {

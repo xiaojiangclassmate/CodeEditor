@@ -1,9 +1,6 @@
 package com.xiaojiangi.editor.text;
 
 
-
-
-
 import java.util.LinkedList;
 
 public final class TextManager {

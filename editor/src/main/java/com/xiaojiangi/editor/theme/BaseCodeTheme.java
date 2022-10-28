@@ -4,24 +4,51 @@ import android.util.SparseIntArray;
 
 public class BaseCodeTheme {
     private SparseIntArray colors;
-    public static final int LINE_NUMBER = 1;    //行号
-    public static final int LINE_NUMBER_BACKGROUND = 2;    //行号背景
-    public static final int LINE_COLOR = 3;    //分割线
-    public static final int CODE_BACKGROUND = 4;    //文本背景
-    public static final int CURRENT_LINE_BACKGROUND = 5;    //当前行背景
-    public static final int CURSOR_COLOR = 6;    //光标颜色
-    public static final int TEXT_COLOR = 7; //文本颜色
-    public static final int SELECTION_TEXT_BACKGROUND = 8; //选择背景颜色
+    /**
+     * 行号
+     */
+    public static final int LINE_NUMBER = 1;
+    /**
+     * 行号背景
+     */
+    public static final int LINE_NUMBER_BACKGROUND = 2;
+    /**
+     * 分割线
+     */
+    public static final int LINE_COLOR = 3;
+    /**
+     * 代码背景颜色
+     */
+    public static final int CODE_BACKGROUND = 4;
+    /**
+     * 当前行背景
+     */
+    public static final int CURRENT_LINE_BACKGROUND = 5;
+    /**
+     * 光标颜色
+     */
+    public static final int CURSOR_COLOR = 6;
+    /**
+     * 默认字体颜色
+     */
+    public static final int TEXT_COLOR = 7;
+    /**
+     * 选中行背景色
+     */
+    public static final int SELECTION_TEXT_BACKGROUND = 8;
+    /**
+     * 光标颜色样式
+     */
     public static final int CURSOR_STYLE_COLOR = 9;
 
     private static final int MIN = 1;
     private static final int MAX = 9;
 
-    protected void apply(int type){
-        int color=getColor(type);
-        switch (type){
+    protected void apply(int type) {
+        int color = getColor(type);
+        switch (type) {
             case LINE_NUMBER:
-                color =0xffb2acad;
+                color = 0xffb2acad;
                 break;
             case LINE_NUMBER_BACKGROUND:
                 color =0xfff2f2f2;
