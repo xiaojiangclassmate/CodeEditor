@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Text {
     private List<TextLine> mList;
-
+    private final TextUndoManager mUndoManager;
     public Text() {
         this(null);
     }
@@ -18,6 +18,7 @@ public class Text {
         if (text == null)
             text = "";
         mList = new ArrayList<>();
+        mUndoManager = new TextUndoManager();
         mList.add(new TextLine());
         insert(0, 0, text);
     }
@@ -73,6 +74,14 @@ public class Text {
         checkTextLine(line);
         if (mList.get(line).length() < index)
             throw new ArrayIndexOutOfBoundsException();
+    }
+
+    public void undo() {
+
+    }
+
+    public void redo() {
+
     }
 
     @NonNull

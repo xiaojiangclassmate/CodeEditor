@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:title="撤销"
+        android:icon="@drawable/ic_undo"
+        android:id="@+id/editor_undo" />
+    <item
+        android:title="恢复"
+        android:icon="@drawable/ic_redo"
+        android:id="@+id/editor_redo" />
+</menu>

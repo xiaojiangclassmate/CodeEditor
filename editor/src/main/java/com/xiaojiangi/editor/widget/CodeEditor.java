@@ -15,13 +15,24 @@ import com.xiaojiangi.editor.theme.AbstractColorTheme;
 import com.xiaojiangi.editor.theme.EditorColorTheme;
 
 public class CodeEditor extends View {
-    private boolean enableEdit;
 
+    /**
+     * 默认文本字体大小
+     */
+    public static final float DEFAULT_TEXT_SIZE = 18f;
+    /**
+     * 默认制表符空格的数量
+     */
+    public static final int DEFAULT_TAB_SPACE_COUNT = 4;
+
+    private boolean enableEdit;
+    private int mTabSpaceCount;
     private EditorInputConnection mEditorInputConnect;
     private InputMethodManager mInputMethodManager;
     private EditorColorTheme mColorTheme;
     private Painter mPainter;
     private Text mText;
+    private float mTextSize;
 
     public CodeEditor(Context context) {
         this(context, null);
@@ -43,16 +54,20 @@ public class CodeEditor extends View {
     private void initView() {
         setFocusable(true);
         setFocusableInTouchMode(true);
-        enableEdit = true;
+        setColorTheme(new EditorColorTheme());
+
         mEditorInputConnect = new EditorInputConnection(this);
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         mPainter = new Painter(this);
-        mColorTheme = new EditorColorTheme();
+        setEnableEdit(true);
+        setTabWidth(DEFAULT_TAB_SPACE_COUNT);
+        setTextSize(DEFAULT_TEXT_SIZE);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        mPainter.onDraw(canvas);
     }
 
     @Override
@@ -89,6 +104,18 @@ public class CodeEditor extends View {
         invalidate();
     }
 
+    public void undo() {
+        if (enableEdit) {
+            mText.undo();
+        }
+    }
+
+    public void redo() {
+        if (enableEdit) {
+            mText.redo();
+        }
+    }
+
     public boolean isEnableEdit() {
         return enableEdit;
     }
@@ -102,8 +129,32 @@ public class CodeEditor extends View {
         return mColorTheme;
     }
 
-    public void setColorTheme(EditorColorTheme mColorTheme) {
-        this.mColorTheme = mColorTheme;
-
+    public void setColorTheme(@NonNull EditorColorTheme colorTheme) {
+        this.mColorTheme = colorTheme;
+        mPainter.setColorTheme(colorTheme);
+        invalidate();
     }
+
+    public void setTextSize(float textSize) {
+        mTextSize = textSize;
+        mPainter.setTextSize(textSize);
+        invalidate();
+    }
+
+    public float getTextSize() {
+        return mTextSize;
+    }
+
+    public void setTabWidth(int spaceCount) {
+        if (spaceCount < 0)
+            return;
+        this.mTabSpaceCount = spaceCount;
+        mPainter.setTabWidth(spaceCount);
+        invalidate();
+    }
+
+    public int getTabWidth() {
+        return mTabSpaceCount;
+    }
+
 }
