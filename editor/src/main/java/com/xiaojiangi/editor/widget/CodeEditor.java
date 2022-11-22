@@ -1,11 +1,15 @@
 package com.xiaojiangi.editor.widget;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.OverScroller;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,10 +33,12 @@ public class CodeEditor extends View {
     private int mTabSpaceCount;
     private EditorInputConnection mEditorInputConnect;
     private InputMethodManager mInputMethodManager;
-    private EditorColorTheme mColorTheme;
+    private AbstractColorTheme mColorTheme;
     private Painter mPainter;
+    private OverScroller mOverScroller;
     private Text mText;
     private float mTextSize;
+    private float mDpUnit;
 
     public CodeEditor(Context context) {
         this(context, null);
@@ -54,14 +60,19 @@ public class CodeEditor extends View {
     private void initView() {
         setFocusable(true);
         setFocusableInTouchMode(true);
-        setColorTheme(new EditorColorTheme());
-
+        setEnableEdit(true);
+        mDpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, Resources.getSystem().getDisplayMetrics()) / 10F;
         mEditorInputConnect = new EditorInputConnection(this);
+        mOverScroller = new OverScroller(getContext());
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         mPainter = new Painter(this);
-        setEnableEdit(true);
         setTabWidth(DEFAULT_TAB_SPACE_COUNT);
         setTextSize(DEFAULT_TEXT_SIZE);
+        setTextTypeface(Typeface.MONOSPACE);
+        setColorTheme(new EditorColorTheme());
+
+        setText(null);
+
     }
 
     @Override
@@ -71,10 +82,26 @@ public class CodeEditor extends View {
     }
 
     @Override
+    public void computeScroll() {
+        super.computeScroll();
+        if (mOverScroller.computeScrollOffset()) {
+            scrollTo(mOverScroller.getCurrX(), mOverScroller.getCurrY());
+            postInvalidate();
+        }
+    }
+
+
+    @Override
     public EditorInputConnection onCreateInputConnection(EditorInfo outAttrs) {
         outAttrs.inputType = EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
         return mEditorInputConnect;
     }
+
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return isEnableEdit();
+    }
+
 
     public void showSoftInput() {
         if (!isEnableEdit())
@@ -101,17 +128,18 @@ public class CodeEditor extends View {
 
     public void setText(@Nullable CharSequence text) {
         mText = new Text(text);
+        mOverScroller.startScroll(0, 0, 0, 0, 0);
         invalidate();
     }
 
     public void undo() {
-        if (enableEdit) {
+        if (isEnableEdit()) {
             mText.undo();
         }
     }
 
     public void redo() {
-        if (enableEdit) {
+        if (isEnableEdit()) {
             mText.redo();
         }
     }
@@ -125,11 +153,11 @@ public class CodeEditor extends View {
         invalidate();
     }
 
-    public EditorColorTheme getColorTheme() {
+    public AbstractColorTheme getColorTheme() {
         return mColorTheme;
     }
 
-    public void setColorTheme(@NonNull EditorColorTheme colorTheme) {
+    public void setColorTheme(@NonNull AbstractColorTheme colorTheme) {
         this.mColorTheme = colorTheme;
         mPainter.setColorTheme(colorTheme);
         invalidate();
@@ -157,4 +185,28 @@ public class CodeEditor extends View {
         return mTabSpaceCount;
     }
 
+    public void setTextTypeface(Typeface typeface) {
+        mPainter.setTextTypeface(typeface);
+        invalidate();
+    }
+
+    public OverScroller getOverScroller() {
+        return mOverScroller;
+    }
+
+    public int getVisibleViewMaxX() {
+        return (int) Math.max(0, mPainter.getMaxTextLineLength(mText.max().toCharArray(), mText.maxLength()));
+    }
+
+    public int getVisibleViewMaxY() {
+        return (int) Math.max(0, (mPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
+    }
+
+    protected Text getContent() {
+        return mText;
+    }
+
+    protected float getDpUnit() {
+        return mDpUnit;
+    }
 }

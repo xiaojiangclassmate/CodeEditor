@@ -5,8 +5,8 @@ plugins {
 
 android {
     compileSdk 33
-    viewBinding {
-        enable = true
+    buildFeatures {
+        viewBinding = true
     }
     defaultConfig {
         applicationId "com.xiaojiangi.simple.code"

@@ -2,6 +2,7 @@ package com.xiaojiangi.editor.text;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -10,6 +11,7 @@ import java.util.List;
 public class Text {
     private List<TextLine> mList;
     private final TextUndoManager mUndoManager;
+    private TextLine maxTextLine;
     public Text() {
         this(null);
     }
@@ -19,7 +21,8 @@ public class Text {
             text = "";
         mList = new ArrayList<>();
         mUndoManager = new TextUndoManager();
-        mList.add(new TextLine());
+        maxTextLine = new TextLine();
+        mList.add(maxTextLine);
         insert(0, 0, text);
     }
 
@@ -46,6 +49,7 @@ public class Text {
         if (linkedList.size() != 0) {
             mList.addAll(line, linkedList);
         }
+        setMaxTextLine(null);
         return this;
     }
 
@@ -64,6 +68,26 @@ public class Text {
         return mList.get(line);
     }
 
+    public TextLine max() {
+        return maxTextLine;
+    }
+
+    public int maxLength() {
+        return maxTextLine.length();
+    }
+
+    public void undo() {
+
+    }
+
+    public void redo() {
+
+    }
+
+    public int size() {
+        return mList.size();
+    }
+
     private void checkTextLine(int line) {
         if (line > mList.size()) {
             throw new IndexOutOfBoundsException();
@@ -76,12 +100,22 @@ public class Text {
             throw new ArrayIndexOutOfBoundsException();
     }
 
-    public void undo() {
-
+    private TextLine getMaxTextLine() {
+        TextLine textLine = get(0);
+        for (int i = 0; i < mList.size(); i++) {
+            if (textLine.length() < mList.get(i).length())
+                textLine = mList.get(i);
+        }
+        return textLine;
     }
 
-    public void redo() {
-
+    private void setMaxTextLine(@Nullable TextLine textLine) {
+        if (textLine == null) {
+            maxTextLine = getMaxTextLine();
+            return;
+        }
+        if (textLine.length() > maxTextLine.length())
+            maxTextLine = textLine;
     }
 
     @NonNull

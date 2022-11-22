@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/file_open_view"
+        android:title="View.java" />
+    <item
+        android:id="@+id/editor_clear"
+        android:title="清空" />
     <item
         android:title="撤销"
         android:icon="@drawable/ic_undo"
-        android:id="@+id/editor_undo" />
+        android:id="@+id/editor_undo"
+        app:showAsAction="always" />
     <item
         android:title="恢复"
         android:icon="@drawable/ic_redo"
-        android:id="@+id/editor_redo" />
+        android:id="@+id/editor_redo"
+        app:showAsAction="always" />
 </menu>
