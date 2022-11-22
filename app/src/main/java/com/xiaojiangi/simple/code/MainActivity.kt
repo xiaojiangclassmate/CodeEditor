@@ -3,11 +3,11 @@ package com.xiaojiangi.simple.code
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.EditText
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.xiaojiangi.simple.code.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -18,7 +18,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(_binding.root)
         setSupportActionBar(_binding.toolbar)
         _binding.editor.setTextTypeface(Typeface.createFromAsset(assets, "jetbrains_mono.ttf"))
-        _binding.editor.setText(String(assets.open("CodeEditor.java").readBytes()))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -31,44 +30,12 @@ class MainActivity : AppCompatActivity() {
                     assets.open("View.java").readBytes()
                 )
             )
-
-            R.id.file_open_code_editor -> _binding.editor.setText(
-                String(
-                    assets.open("CodeEditor.java").readBytes()
-                )
-            )
-
-            R.id.editor_font_size -> {
-                val view = View.inflate(this, R.layout.dialog_edit_text, null)
-
-                MaterialAlertDialogBuilder(this).setView(view).setTitle("字体大小")
-                    .setNegativeButton("确定") { _, _ ->
-                        val size: Float =
-                            (view.findViewById<EditText>(R.id.editTextText).text.toString()).toFloat()
-                        _binding.editor.textSize = size
-                    }.setNeutralButton("取消", null).show()
-            }
-
-            R.id.editor_jump_line -> {
-                val view = View.inflate(this, R.layout.dialog_edit_text, null)
-                MaterialAlertDialogBuilder(this).setView(view).setTitle("跳转行")
-                    .setNegativeButton("确定") { _, _ ->
-                        _binding.editor.jumpToLine(
-                            (view.findViewById<EditText>(R.id.editTextText).text.toString().toInt())
-                        )
-                    }.setNeutralButton("取消", null).show()
-            }
-
-            R.id.editor_fixed_line -> {
-                _binding.editor.isFixedLineNumber = !_binding.editor.isFixedLineNumber
-                item.isChecked = _binding.editor.isFixedLineNumber
-            }
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.options, menu)
+        menuInflater.inflate(R.menu.main, menu)
         return true
     }
 }

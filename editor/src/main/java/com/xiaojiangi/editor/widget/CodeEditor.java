@@ -1,15 +1,11 @@
 package com.xiaojiangi.editor.widget;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.GestureDetector;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -33,19 +29,16 @@ public class CodeEditor extends View {
      */
     public static final int DEFAULT_TAB_SPACE_COUNT = 4;
 
-    private int mTabSpaceCount;
-    private float mTextSize;
-    private float mDpUnit;
     private boolean enableEdit;
-    private boolean fixedLineNumber;
-    private Text mText;
+    private int mTabSpaceCount;
     private EditorInputConnection mEditorInputConnect;
     private InputMethodManager mInputMethodManager;
     private AbstractColorTheme mColorTheme;
-    private EditorTouchEventHandler mEditorTouchEventHandler;
-    private EditorPainter mEditorPainter;
+    private Painter mPainter;
     private OverScroller mOverScroller;
-    private GestureDetector mGestureDetector;
+    private Text mText;
+    private float mTextSize;
+    private float mDpUnit;
 
     public CodeEditor(Context context) {
         this(context, null);
@@ -68,15 +61,11 @@ public class CodeEditor extends View {
         setFocusable(true);
         setFocusableInTouchMode(true);
         setEnableEdit(true);
-        setFixedLineNumber(false);
         mDpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, Resources.getSystem().getDisplayMetrics()) / 10F;
         mEditorInputConnect = new EditorInputConnection(this);
-        mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         mOverScroller = new OverScroller(getContext());
-        mEditorTouchEventHandler = new EditorTouchEventHandler(this);
-        mGestureDetector = new GestureDetector(getContext(), mEditorTouchEventHandler);
-        mGestureDetector.setOnDoubleTapListener(mEditorTouchEventHandler);
-        mEditorPainter = new EditorPainter(this);
+        mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        mPainter = new Painter(this);
         setTabWidth(DEFAULT_TAB_SPACE_COUNT);
         setTextSize(DEFAULT_TEXT_SIZE);
         setTextTypeface(Typeface.MONOSPACE);
@@ -89,7 +78,7 @@ public class CodeEditor extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        mEditorPainter.onDraw(canvas);
+        mPainter.onDraw(canvas);
     }
 
     @Override
@@ -108,50 +97,11 @@ public class CodeEditor extends View {
         return mEditorInputConnect;
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        boolean r1 = mGestureDetector.onTouchEvent(event);
-        boolean r2 = mEditorTouchEventHandler.onTouchEvent(event);
-        return (r1 || r2);
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_HOME:
-                break;
-            case KeyEvent.KEYCODE_DPAD_LEFT:
-                mText.cursorMoveToLeft();
-                break;
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-                mText.cursorMoveToRight();
-                break;
-            case KeyEvent.KEYCODE_DPAD_UP:
-                mText.cursorMoveToTop();
-                break;
-            case KeyEvent.KEYCODE_DPAD_DOWN:
-                mText.cursorMoveToBottom();
-                break;
-        }
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_DEL:
-                deleteText();
-                break;
-            case KeyEvent.KEYCODE_ENTER:
-                insertText("\n");
-                break;
-
-        }
-        invalidate();
-        return true;
-
-    }
-
     @Override
     public boolean onCheckIsTextEditor() {
         return isEnableEdit();
     }
+
 
     public void showSoftInput() {
         if (!isEnableEdit())
@@ -186,23 +136,12 @@ public class CodeEditor extends View {
         if (isEnableEdit()) {
             mText.undo();
         }
-        invalidate();
     }
 
     public void redo() {
         if (isEnableEdit()) {
             mText.redo();
         }
-        invalidate();
-    }
-
-    protected void insertText(CharSequence text) {
-        mText.insert(mText.getCursorLine(), mText.getCursorColumn(), text);
-        invalidate();
-    }
-
-    protected void deleteText() {
-
     }
 
     public boolean isEnableEdit() {
@@ -214,117 +153,53 @@ public class CodeEditor extends View {
         invalidate();
     }
 
-    /**
-     * @see #setColorTheme(AbstractColorTheme)
-     */
     public AbstractColorTheme getColorTheme() {
         return mColorTheme;
     }
 
-    /**
-     * 设置CodeEditor的颜色样式
-     *
-     * @param theme 颜色主题
-     */
-    public <T extends AbstractColorTheme> void setColorTheme(@NonNull T theme) {
-        this.mColorTheme = theme;
-        mEditorPainter.setColorTheme(theme);
+    public void setColorTheme(@NonNull AbstractColorTheme colorTheme) {
+        this.mColorTheme = colorTheme;
+        mPainter.setColorTheme(colorTheme);
         invalidate();
     }
 
-    /**
-     * 得到字体的大小
-     *
-     * @see #setTextSize(float)
-     */
+    public void setTextSize(float textSize) {
+        mTextSize = textSize;
+        mPainter.setTextSize(textSize);
+        invalidate();
+    }
+
     public float getTextSize() {
         return mTextSize;
     }
 
-    /**
-     * 设置CodeEditor的字体大小
-     *
-     * @param textSize 字体大小
-     */
-    public void setTextSize(float textSize) {
-        mTextSize = textSize;
-        mEditorPainter.setTextSize(textSize);
-        invalidate();
-    }
-
-    /**
-     * @see #setFixedLineNumber(boolean is)
-     */
-    public boolean isFixedLineNumber() {
-        return fixedLineNumber;
-    }
-
-    /**
-     * 设置CodeEditor是否固定行号
-     *
-     * @param is
-     */
-    public void setFixedLineNumber(boolean is) {
-        fixedLineNumber = is;
-        invalidate();
-    }
-
-    /**
-     * @return 制表符的空格数量
-     * @see #setTabWidth(int)
-     */
-    public int getTabWidth() {
-        return mTabSpaceCount;
-    }
-
-    /**
-     * 设置制表符的宽度
-     *
-     * @param spaceCount 空格数量
-     */
     public void setTabWidth(int spaceCount) {
         if (spaceCount < 0)
             return;
         this.mTabSpaceCount = spaceCount;
-        mEditorPainter.setTabWidth(spaceCount);
+        mPainter.setTabWidth(spaceCount);
         invalidate();
+    }
+
+    public int getTabWidth() {
+        return mTabSpaceCount;
     }
 
     public void setTextTypeface(Typeface typeface) {
-        mEditorPainter.setTextTypeface(typeface);
+        mPainter.setTextTypeface(typeface);
         invalidate();
     }
 
-    /**
-     * 跳转行
-     *
-     * @param lineNumber 行数
-     */
-    public void jumpToLine(int lineNumber) {
-        if (mText.size() < lineNumber)
-            return;
-        lineNumber--;
-        int endY;
-        if (mEditorPainter.getVisibleLineStart() < lineNumber) {
-            endY = -(int) ((mOverScroller.getCurrX() - lineNumber) * mEditorPainter.getLineHeight());
-            mText.setCursorPos(lineNumber, 0);
-        } else {
-            endY = -(int) ((mEditorPainter.getVisibleLineStart() + lineNumber) * mEditorPainter.getLineHeight());
-        }
-        mOverScroller.startScroll(mOverScroller.getCurrX(), mOverScroller.getCurrY(), mOverScroller.getCurrX(), endY);
-        invalidate();
-    }
-
-    protected OverScroller getOverScroller() {
+    public OverScroller getOverScroller() {
         return mOverScroller;
     }
 
-    protected int getScrollMaxX() {
-        return (int) Math.max(0, mEditorPainter.getOffset() + mEditorPainter.measureTextWidth(mText.max().toCharArray()) - (getWidth() / 2f));
+    public int getVisibleViewMaxX() {
+        return (int) Math.max(0, mPainter.getMaxTextLineLength(mText.max().toCharArray(), mText.maxLength()));
     }
 
-    protected int getScrollMaxY() {
-        return (int) Math.max(0, (mEditorPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
+    public int getVisibleViewMaxY() {
+        return (int) Math.max(0, (mPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
     }
 
     protected Text getContent() {
@@ -334,10 +209,4 @@ public class CodeEditor extends View {
     protected float getDpUnit() {
         return mDpUnit;
     }
-
-    protected EditorPainter getEditorPainter() {
-        return mEditorPainter;
-    }
-
-
 }
