@@ -16,7 +16,7 @@ public class Painter {
     private float tabLength;
     private int tabCount;
 
-    void onDraw(Canvas canvas) {
+    protected void onDraw(Canvas canvas) {
 
     }
 
