@@ -1,11 +1,15 @@
 package com.xiaojiangi.editor.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -34,11 +38,13 @@ public class CodeEditor extends View {
     private EditorInputConnection mEditorInputConnect;
     private InputMethodManager mInputMethodManager;
     private AbstractColorTheme mColorTheme;
+    private EditorTouchEventHandler mEditorTouchEventHandler;
     private Painter mPainter;
     private OverScroller mOverScroller;
     private Text mText;
     private float mTextSize;
     private float mDpUnit;
+    private GestureDetector mGestureDetector;
 
     public CodeEditor(Context context) {
         this(context, null);
@@ -62,9 +68,13 @@ public class CodeEditor extends View {
         setFocusableInTouchMode(true);
         setEnableEdit(true);
         mDpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, Resources.getSystem().getDisplayMetrics()) / 10F;
+
         mEditorInputConnect = new EditorInputConnection(this);
-        mOverScroller = new OverScroller(getContext());
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        mOverScroller = new OverScroller(getContext());
+        mEditorTouchEventHandler = new EditorTouchEventHandler(this);
+        mGestureDetector = new GestureDetector(getContext(), mEditorTouchEventHandler);
+        mGestureDetector.setOnDoubleTapListener(mEditorTouchEventHandler);
         mPainter = new Painter(this);
         setTabWidth(DEFAULT_TAB_SPACE_COUNT);
         setTextSize(DEFAULT_TEXT_SIZE);
@@ -95,6 +105,14 @@ public class CodeEditor extends View {
     public EditorInputConnection onCreateInputConnection(EditorInfo outAttrs) {
         outAttrs.inputType = EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
         return mEditorInputConnect;
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean r1 = mGestureDetector.onTouchEvent(event);
+        boolean r2 = mEditorTouchEventHandler.onTouchEvent(event);
+        return (r1 || r2);
     }
 
     @Override
@@ -136,12 +154,14 @@ public class CodeEditor extends View {
         if (isEnableEdit()) {
             mText.undo();
         }
+        invalidate();
     }
 
     public void redo() {
         if (isEnableEdit()) {
             mText.redo();
         }
+        invalidate();
     }
 
     public boolean isEnableEdit() {
@@ -194,11 +214,11 @@ public class CodeEditor extends View {
         return mOverScroller;
     }
 
-    public int getVisibleViewMaxX() {
-        return (int) Math.max(0, mPainter.getMaxTextLineLength(mText.max().toCharArray(), mText.maxLength()));
+    public int getViewMaxX() {
+        return (int) Math.max(0, mPainter.getOffset() + mPainter.getMaxTextLineLength(mText.max().toCharArray()) - (getWidth() / 2f));
     }
 
-    public int getVisibleViewMaxY() {
+    public int getViewMaxY() {
         return (int) Math.max(0, (mPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
     }
 

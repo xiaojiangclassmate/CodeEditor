@@ -4,19 +4,25 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 
+import androidx.annotation.NonNull;
+
 import com.xiaojiangi.editor.theme.AbstractColorTheme;
 import com.xiaojiangi.editor.theme.EditorColorTheme;
 
 public class Painter {
     private final CodeEditor mEditor;
     private AbstractColorTheme mEditorColorTheme;
-    private Paint mPaint;
-    private Paint mNumberPaint;
-    private Paint mOtherPaint;
+    private final Paint mPaint;
+    private final Paint mNumberPaint;
+    private final Paint mOtherPaint;
     private float spaceLength;
-    private float tabLength;
+    private final float dpUnit;
     private int tabCount;
-    private float dpUnit;
+    private float tabWidth;
+    /**
+     * 行号背景偏移量
+     */
+    private float lineNumberBackgroundOffset;
 
     public Painter(CodeEditor codeEditor) {
         this.mEditor = codeEditor;
@@ -35,19 +41,21 @@ public class Painter {
         var mText = mEditor.getContent();
         int visibleLineStart = Math.max((int) (mEditor.getOverScroller().getCurrY() / getLineHeight()), 0);
         int visibleLineEnd = Math.min(mText.size(), (int) ((mEditor.getHeight() + mEditor.getOverScroller().getCurrY()) / getLineHeight() + 1));
+
         /*
           行号偏移量
          */
         float lineNumberOffset = mPaint.measureText(String.valueOf(mText.size())) + (2 * mEditor.getDpUnit());
 
         /*
-         *  行号背景偏移量
+         行号背景偏移量
          */
-        float lineNumberBackgroundOffset = lineNumberOffset + (8 * dpUnit);
+        lineNumberBackgroundOffset = lineNumberOffset + (8 * dpUnit);
+
         /*
-         * 行文本偏移量
+          行文本偏移量
          */
-        float lineTextOffset = lineNumberBackgroundOffset + (4 * dpUnit);
+        float lineTextOffset = lineNumberBackgroundOffset + (2 * dpUnit);
 
         /*
          * 通过 (可视行*行高) 来计算行号背景和行号线的x轴
@@ -76,12 +84,15 @@ public class Painter {
     protected void drawLineNumberAndText(int visibleLineStart, int visibleLineEnd, float numberOffset, float textOffset, Canvas canvas) {
         mNumberPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.LINE_NUMBER));
         mNumberPaint.setTextAlign(Paint.Align.RIGHT);
-
+        mPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.TEXT_COLOR));
+        mPaint.setTextAlign(Paint.Align.LEFT);
         for (int i = visibleLineStart; i < visibleLineEnd; i++) {
             /* 当前行文本基线 */
             var textBaseLine = (getLineHeight() * i) - mPaint.ascent();
 
             canvas.drawText(String.valueOf(i + 1), numberOffset, textBaseLine, mNumberPaint);
+            var current = mEditor.getContent().get(i).toCharArray();
+            canvas.drawText(current, 0, current.length, textOffset, textBaseLine, mPaint);
         }
     }
 
@@ -118,26 +129,69 @@ public class Painter {
         mEditor.setBackgroundColor(mEditorColorTheme.getColor(EditorColorTheme.CODE_BACKGROUND));
     }
 
-    protected void setColorTheme(AbstractColorTheme colorTheme) {
+    /**
+     * 设置控件主题样式
+     *
+     * @param colorTheme 主题
+     */
+    protected void setColorTheme(@NonNull AbstractColorTheme colorTheme) {
         mEditorColorTheme = colorTheme;
         drawViewBackground();
     }
 
-    protected void setTextTypeface(Typeface typeface) {
+    /**
+     * 设置字体样式
+     *
+     * @param typeface 字体样式
+     */
+    protected void setTextTypeface(@NonNull Typeface typeface) {
         mPaint.setTypeface(typeface);
         mNumberPaint.setTypeface(typeface);
     }
 
+    /**
+     * 设置字体大小
+     *
+     * @param size 字体大小
+     */
     public void setTextSize(float size) {
         mNumberPaint.setTextSize(size * dpUnit);
         mPaint.setTextSize(size * dpUnit);
     }
 
-    protected void setTabWidth(int tabSpaceCount) {
-        tabCount = tabSpaceCount;
-        tabLength = tabSpaceCount * spaceLength;
+    /**
+     * 返回制表符宽度
+     *
+     * @return 制表符宽度
+     */
+    protected float getTabWidth() {
+        return tabWidth;
     }
 
+    /**
+     * 设置制表符宽度
+     *
+     * @param tabSpaceCount 制表符空格数量
+     */
+    protected void setTabWidth(int tabSpaceCount) {
+        tabCount = tabSpaceCount;
+        tabWidth = tabSpaceCount * spaceLength;
+    }
+
+    /**
+     * 返回制表符空格的数量
+     *
+     * @return 空格数量
+     */
+    protected float getTabCount() {
+        return tabCount;
+    }
+
+    /**
+     * 返回空格的宽度
+     *
+     * @return 空格宽度
+     */
     protected float getSpaceWidth() {
         return spaceLength;
     }
@@ -146,6 +200,11 @@ public class Painter {
         spaceLength = mPaint.measureText(" ");
     }
 
+    /**
+     * 返回行的高度
+     *
+     * @return 行高
+     */
     protected float getLineHeight() {
         return mPaint.descent() - mPaint.ascent();
     }
@@ -157,4 +216,14 @@ public class Painter {
     protected float getMaxTextLineLength(char[] chars) {
         return mPaint.measureText(chars, 0, chars.length);
     }
+
+    /**
+     * 返回行号部分的偏移量
+     *
+     * @return 偏移量
+     */
+    protected float getOffset() {
+        return lineNumberBackgroundOffset;
+    }
+
 }

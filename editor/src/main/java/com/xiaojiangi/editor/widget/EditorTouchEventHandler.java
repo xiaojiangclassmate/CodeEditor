@@ -47,44 +47,20 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
     @Override
     public boolean onSingleTapUp(@NonNull MotionEvent e) {
         mEditor.showSoftInput();
-        //计算行的位置
-        int line = (int) Math.min(mEditor.getContent().size() - 1, (e.getY() + mOverScroller.getCurrY()) / mEditor.getEditorPainter().getLineHeight());
-        int column = 0;
-        float columnOffset = mEditor.getEditorPainter().getOffset();
-        var contentLine = mEditor.getContent().get(line);
-        //计算列的位置
-        for (int i = 0; i < contentLine.length(); i++) {
-            char c = contentLine.charAt(i);
-            if (c == '\t') {
-                columnOffset += mEditor.getEditorPainter().getTabWidth();
-            } else {
-                columnOffset += mEditor.getEditorPainter().measureTextWidth(c);
-            }
-            if (e.getX() + mOverScroller.getCurrX() < columnOffset) {
-                column = i;
-                break;
-            }
-        }
-        if (e.getX() + mOverScroller.getCurrX() > columnOffset) {
-            column = contentLine.length();
-        }
-
-        mEditor.getContent().setCursorPos(line, column);
-        mEditor.invalidate();
-        return true;
+        return false;
     }
 
     @Override
     public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
         int dx = (int) distanceX;
         int dy = (int) distanceY;
-        if (mOverScroller.getCurrX() + distanceX > mEditor.getScrollMaxX()) {
-            dx = mEditor.getScrollMaxX() - mOverScroller.getCurrX();
+        if (mOverScroller.getCurrX() + distanceX > mEditor.getViewMaxX()) {
+            dx = mEditor.getViewMaxX() - mOverScroller.getCurrX();
         } else if (mOverScroller.getCurrX() + distanceX < 0) {
             dx = 0;
         }
-        if (mOverScroller.getCurrY() + distanceY > mEditor.getScrollMaxY()) {
-            dy = mEditor.getScrollMaxY() - mOverScroller.getCurrY();
+        if (mOverScroller.getCurrY() + distanceY > mEditor.getViewMaxY()) {
+            dy = mEditor.getViewMaxY() - mOverScroller.getCurrY();
         } else if (mOverScroller.getCurrY() + distanceY < 0) {
             dy = 0;
         }
@@ -103,7 +79,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         mOverScroller.forceFinished(true);
         mOverScroller.fling(mEditor.getScrollX(), mEditor.getScrollY(),
                 -(int) velocityX, -(int) velocityY,
-                0, mEditor.getScrollMaxX(), 0, mEditor.getScrollMaxY());
+                0, mEditor.getViewMaxX(), 0, mEditor.getViewMaxY());
 
         mEditor.invalidate();
         return true;

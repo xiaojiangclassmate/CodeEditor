@@ -3,6 +3,7 @@ package com.xiaojiangi.simple.code
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuInflater
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(_binding.root)
         setSupportActionBar(_binding.toolbar)
         _binding.editor.setTextTypeface(Typeface.createFromAsset(assets, "jetbrains_mono.ttf"))
+        _binding.editor.setText(String(assets.open("CodeEditor.java").readBytes()))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -30,6 +32,14 @@ class MainActivity : AppCompatActivity() {
                     assets.open("View.java").readBytes()
                 )
             )
+
+            R.id.file_open_code_editor -> _binding.editor.setText(
+                String(
+                    assets.open("CodeEditor.java").readBytes()
+                )
+            )
+
+            R.id.editor_print -> Log.d("Editor", _binding.editor.text.toString())
         }
         return super.onOptionsItemSelected(item)
     }
