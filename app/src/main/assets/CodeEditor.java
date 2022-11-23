@@ -6,61 +6,82 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.OverScroller;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.xiaojiangi.editor.text.Content;
-import com.xiaojiangi.editor.text.TextManager;
-import com.xiaojiangi.editor.theme.BaseCodeTheme;
+import com.xiaojiangi.editor.text.Text;
+import com.xiaojiangi.editor.theme.AbstractColorTheme;
+import com.xiaojiangi.editor.theme.EditorColorTheme;
 
 public class CodeEditor extends View {
 
-    protected float mDpUnit;
-    private Content mText;
-    private BaseCodeTheme mTheme;
-    private Painter mPainter;
-    private Cursor mCursor;
-    private boolean isCursor=true;
-    private EditorInputConnection mInputConnection;
+    /**
+     * 默认文本字体大小
+     */
+    public static final float DEFAULT_TEXT_SIZE = 18f;
+    /**
+     * 默认制表符空格的数量
+     */
+    public static final int DEFAULT_TAB_SPACE_COUNT = 4;
+
+    private boolean enableEdit;
+    private int mTabSpaceCount;
+    private EditorInputConnection mEditorInputConnect;
     private InputMethodManager mInputMethodManager;
-    private GestureDetector mGestureDetector;
-    private EditorTouchEventHandler mEventHandler;
+    private AbstractColorTheme mColorTheme;
+    private EditorTouchEventHandler mEditorTouchEventHandler;
+    private Painter mPainter;
     private OverScroller mOverScroller;
-    public CodeEditor(Context context) {this(context,null);}
-    public CodeEditor(Context context, @Nullable AttributeSet attrs) {this(context, attrs,0);}
-    public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {this(context, attrs, defStyleAttr,0);}
-    public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
+    private Text mText;
+    private float mTextSize;
+    private float mDpUnit;
+    private GestureDetector mGestureDetector;
+
+    public CodeEditor(Context context) {
+        this(context, null);
     }
 
-    private void init(){
+    public CodeEditor(Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, defStyleAttr, 0);
+    }
+
+    public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        initView();
+    }
+
+    private void initView() {
         setFocusable(true);
         setFocusableInTouchMode(true);
+        setEnableEdit(true);
         mDpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, Resources.getSystem().getDisplayMetrics()) / 10F;
-        mInputConnection =new EditorInputConnection(this);
+
+        mEditorInputConnect = new EditorInputConnection(this);
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        mEventHandler =new EditorTouchEventHandler(this);
-        mOverScroller =mEventHandler.getOverScroller();
-        mGestureDetector = new GestureDetector(getContext(), mEventHandler);
-        mGestureDetector.setOnDoubleTapListener(mEventHandler);
-        mText =new Content();
-        mTheme =new BaseCodeTheme();
-        mPainter =new Painter(this);
-        setCursor(true);
-        setTextSize(18);
-        setText("");
+        mOverScroller = new OverScroller(getContext());
+        mEditorTouchEventHandler =new EditorTouchEventHandler(this);
+        mGestureDetector = new GestureDetector(getContext(), mEditorTouchEventHandler);
+        mGestureDetector.setOnDoubleTapListener(mEditorTouchEventHandler);
+        mPainter = new Painter(this);
+        setTabWidth(DEFAULT_TAB_SPACE_COUNT);
+        setTextSize(DEFAULT_TEXT_SIZE);
+        setTextTypeface(Typeface.MONOSPACE);
+        setColorTheme(new EditorColorTheme());
+
+        setText(null);
+
     }
 
     @Override
@@ -68,69 +89,39 @@ public class CodeEditor extends View {
         super.onDraw(canvas);
         mPainter.onDraw(canvas);
     }
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        boolean r1 =mGestureDetector.onTouchEvent(event);
-        boolean r2 =mEventHandler.onTouchEvent(event);
-        return (r1||r2 );
-    }
-    @Override
-    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        outAttrs.inputType = EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
-        return mInputConnection;
-    }
-
-    @Override
-    public boolean onCheckIsTextEditor() {
-        return true;
-    }
 
     @Override
     public void computeScroll() {
         super.computeScroll();
-        if (mOverScroller.computeScrollOffset()){
-            scrollTo(mOverScroller.getCurrX(),mOverScroller.getCurrY());
+        if (mOverScroller.computeScrollOffset()) {
+            scrollTo(mOverScroller.getCurrX(), mOverScroller.getCurrY());
             postInvalidate();
         }
     }
 
+
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-
-        switch (keyCode){
-            case KeyEvent.KEYCODE_HOME:
-                break;
-            case KeyEvent.KEYCODE_DPAD_LEFT:
-                mCursor.dpadLeft();
-                invalidate();
-                break;
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-                mCursor.dpadRight();
-                invalidate();
-                break;
-            case KeyEvent.KEYCODE_DPAD_UP:
-                mCursor.dpadUp();
-                invalidate();
-                break;
-            case KeyEvent.KEYCODE_DPAD_DOWN:
-                mCursor.dpadDown();
-                invalidate();
-                break;
-        }
-        switch (keyCode){
-            case KeyEvent.KEYCODE_DEL:
-                deleteText();
-                break;
-            case KeyEvent.KEYCODE_ENTER:
-                commitText("\n");
-                break;
-
-        }
-        return super.onKeyDown(keyCode, event);
+    public EditorInputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        outAttrs.inputType = EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
+        return mEditorInputConnect;
+    }
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean r1 =mGestureDetector.onTouchEvent(event);
+        boolean r2 =mEditorTouchEventHandler.onTouchEvent(event);
+        return (r1||r2 );
     }
 
-    public void showSoftInput(){
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return isEnableEdit();
+    }
+
+
+    public void showSoftInput() {
+        if (!isEnableEdit())
+            return;
         if (isInTouchMode()) {
             requestFocusFromTouch();
         }
@@ -140,89 +131,98 @@ public class CodeEditor extends View {
         mInputMethodManager.showSoftInput(this, 0);
         invalidate();
     }
-    public void hideSoftInput(){
-        if(mInputMethodManager.isActive())
-            mInputMethodManager.hideSoftInputFromWindow(getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
-    }
-    public void setText(@Nullable CharSequence text){
-        if (text==null)
-            text="";
-        mText =new Content(text);
-        mCursor =mText.getCursor();
-        mOverScroller.startScroll(0,0,0,0);
-        invalidate();
-    }
-    public void commitText(CharSequence text){
-        mText.insert(mCursor.line, mCursor.column,text);
-        invalidate();
+
+    public void hideSoftInput() {
+        if (mInputMethodManager.isActive())
+            mInputMethodManager.hideSoftInputFromWindow(getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
-
-    public void deleteText(){
-        if (mCursor.line==0 &&mCursor.column==0)
-            return;
-        mText.delete(mCursor.line,mCursor.column);
-        invalidate();
-    }
-    public void undo(){
-        mText.undo();
-        invalidate();
-    }
-
-    public void redo(){
-        mText.redo();
-        invalidate();
-    }
-    public void setTextSize(float size){
-        mPainter.setPaintSize(size);
-    }
-    public float getTextSize(){
-        return mPainter.getPaintSize();
-    }
-    public void setTextStyle(Typeface typeface){
-        mPainter.setPaintTypeface(typeface);
-    }
-    public void setTabCount(int count){
-        mPainter.setTabCount(count);
-    }
-    public int getTabCount(){
-        return mPainter.getTabCount();
-    }
-    public float getLineHeight(){
-        return mPainter.getLineHeight();
-    }
-    public Painter getPainter(){
-        return mPainter;
-    }
-    public Cursor getCursor(){
-        return mCursor;
-    }
-
-    public boolean isCursor() {
-        return isCursor;
-    }
-    public void setCursor(boolean b){
-        isCursor =b;
-    }
-    public CharSequence getText(){
+    @NonNull
+    public CharSequence getText() {
         return mText.toString();
     }
-    public BaseCodeTheme getTheme(){
-        return mTheme;
+
+    public void setText(@Nullable CharSequence text) {
+        mText = new Text(text);
+        mOverScroller.startScroll(0, 0, 0, 0, 0);
+        invalidate();
     }
-    public void setTheme(BaseCodeTheme theme){
-        mTheme =theme;
+
+    public void undo() {
+        if (isEnableEdit()) {
+            mText.undo();
+        }
     }
-    public Content getContent(){
-        return mText;
+
+    public void redo() {
+        if (isEnableEdit()) {
+            mText.redo();
+        }
     }
-    protected OverScroller getOverScroller(){
+
+    public boolean isEnableEdit() {
+        return enableEdit;
+    }
+
+    public void setEnableEdit(boolean enableEdit) {
+        this.enableEdit = enableEdit;
+        invalidate();
+    }
+
+    public AbstractColorTheme getColorTheme() {
+        return mColorTheme;
+    }
+
+    public void setColorTheme(@NonNull AbstractColorTheme colorTheme) {
+        this.mColorTheme = colorTheme;
+        mPainter.setColorTheme(colorTheme);
+        invalidate();
+    }
+
+    public void setTextSize(float textSize) {
+        mTextSize = textSize;
+        mPainter.setTextSize(textSize);
+        invalidate();
+    }
+
+    public float getTextSize() {
+        return mTextSize;
+    }
+
+    public void setTabWidth(int spaceCount) {
+        if (spaceCount < 0)
+            return;
+        this.mTabSpaceCount = spaceCount;
+        mPainter.setTabWidth(spaceCount);
+        invalidate();
+    }
+
+    public int getTabWidth() {
+        return mTabSpaceCount;
+    }
+
+    public void setTextTypeface(Typeface typeface) {
+        mPainter.setTextTypeface(typeface);
+        invalidate();
+    }
+
+    public OverScroller getOverScroller() {
         return mOverScroller;
     }
-    public int getMaxX(){
-        return (int)Math.max(0, mPainter.getOffset()+mPainter.measureText(mText.getMaxContentLine().toString()) - getWidth()/2f );
+
+    public int getViewMaxX() {
+        return (int) Math.max(0, mPainter.getMaxTextLineLength(mText.max().toCharArray(), mText.maxLength()));
     }
-    public int getMaxY(){
-        return (int)Math.max(0, (mPainter.getLineHeight()*mText.size()- (getHeight()/2f)));
+
+    public int getViewMaxY() {
+        return (int) Math.max(0, (mPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
+    }
+
+    protected Text getContent() {
+        return mText;
+    }
+
+    protected float getDpUnit() {
+        return mDpUnit;
     }
 }

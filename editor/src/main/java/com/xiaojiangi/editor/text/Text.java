@@ -1,6 +1,7 @@
 package com.xiaojiangi.editor.text;
 
 
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -43,11 +44,9 @@ public class Text {
         }
         if (index != text.length()) {
             current.insert(column, text.subSequence(index, text.length()));
-            current = new TextLine();
-            linkedList.add(current);
         }
         if (linkedList.size() != 0) {
-            mList.addAll(line, linkedList);
+            mList.addAll(line + 1, linkedList);
         }
         setMaxTextLine(null);
         return this;

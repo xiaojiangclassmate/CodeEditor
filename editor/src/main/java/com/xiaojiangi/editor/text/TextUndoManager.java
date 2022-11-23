@@ -1,4 +1,4 @@
 package com.xiaojiangi.editor.text;
 
-public class TextUndoManager {
+public final class TextUndoManager {
 }
