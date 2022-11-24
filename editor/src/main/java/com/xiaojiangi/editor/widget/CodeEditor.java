@@ -6,7 +6,6 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -39,7 +38,7 @@ public class CodeEditor extends View {
     private InputMethodManager mInputMethodManager;
     private AbstractColorTheme mColorTheme;
     private EditorTouchEventHandler mEditorTouchEventHandler;
-    private Painter mPainter;
+    private EditorPainter mEditorPainter;
     private OverScroller mOverScroller;
     private Text mText;
     private float mTextSize;
@@ -75,7 +74,7 @@ public class CodeEditor extends View {
         mEditorTouchEventHandler = new EditorTouchEventHandler(this);
         mGestureDetector = new GestureDetector(getContext(), mEditorTouchEventHandler);
         mGestureDetector.setOnDoubleTapListener(mEditorTouchEventHandler);
-        mPainter = new Painter(this);
+        mEditorPainter = new EditorPainter(this);
         setTabWidth(DEFAULT_TAB_SPACE_COUNT);
         setTextSize(DEFAULT_TEXT_SIZE);
         setTextTypeface(Typeface.MONOSPACE);
@@ -88,7 +87,7 @@ public class CodeEditor extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        mPainter.onDraw(canvas);
+        mEditorPainter.onDraw(canvas);
     }
 
     @Override
@@ -179,13 +178,13 @@ public class CodeEditor extends View {
 
     public void setColorTheme(@NonNull AbstractColorTheme colorTheme) {
         this.mColorTheme = colorTheme;
-        mPainter.setColorTheme(colorTheme);
+        mEditorPainter.setColorTheme(colorTheme);
         invalidate();
     }
 
     public void setTextSize(float textSize) {
         mTextSize = textSize;
-        mPainter.setTextSize(textSize);
+        mEditorPainter.setTextSize(textSize);
         invalidate();
     }
 
@@ -197,7 +196,7 @@ public class CodeEditor extends View {
         if (spaceCount < 0)
             return;
         this.mTabSpaceCount = spaceCount;
-        mPainter.setTabWidth(spaceCount);
+        mEditorPainter.setTabWidth(spaceCount);
         invalidate();
     }
 
@@ -206,7 +205,7 @@ public class CodeEditor extends View {
     }
 
     public void setTextTypeface(Typeface typeface) {
-        mPainter.setTextTypeface(typeface);
+        mEditorPainter.setTextTypeface(typeface);
         invalidate();
     }
 
@@ -215,11 +214,11 @@ public class CodeEditor extends View {
     }
 
     public int getViewMaxX() {
-        return (int) Math.max(0, mPainter.getOffset() + mPainter.getMaxTextLineLength(mText.max().toCharArray()) - (getWidth() / 2f));
+        return (int) Math.max(0, mEditorPainter.getOffset() + mEditorPainter.measureTextWidth(mText.max().toCharArray()) - (getWidth() / 2f));
     }
 
     public int getViewMaxY() {
-        return (int) Math.max(0, (mPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
+        return (int) Math.max(0, (mEditorPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
     }
 
     protected Text getContent() {
@@ -228,5 +227,9 @@ public class CodeEditor extends View {
 
     protected float getDpUnit() {
         return mDpUnit;
+    }
+
+    public EditorPainter getEditorPainter() {
+        return mEditorPainter;
     }
 }

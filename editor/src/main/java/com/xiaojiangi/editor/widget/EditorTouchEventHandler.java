@@ -47,7 +47,30 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
     @Override
     public boolean onSingleTapUp(@NonNull MotionEvent e) {
         mEditor.showSoftInput();
-        return false;
+        //计算行的位置
+        int line = (int) Math.min(mEditor.getContent().size() - 1, (e.getY() + mOverScroller.getCurrY()) / mEditor.getEditorPainter().getLineHeight());
+        int column = 0;
+        float columnOffset = mEditor.getEditorPainter().getOffset();
+        var contentLine = mEditor.getContent().get(line);
+        //计算列的位置
+        for (int i = 0; i < contentLine.length(); i++) {
+            char c = contentLine.charAt(i);
+            if (c == '\t') {
+                columnOffset += mEditor.getEditorPainter().getTabWidth();
+            } else {
+                columnOffset += mEditor.getEditorPainter().measureTextWidth(c);
+            }
+            if (e.getX() + mOverScroller.getCurrX() < columnOffset) {
+                column = i;
+                break;
+            }
+        }
+        if (e.getX() + mOverScroller.getCurrX() > columnOffset) {
+            column = contentLine.length();
+        }
+        mEditor.getContent().setCursorPos(line, column);
+        mEditor.invalidate();
+        return true;
     }
 
     @Override

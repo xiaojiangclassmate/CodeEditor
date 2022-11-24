@@ -147,6 +147,13 @@ public class TextLine implements CharSequence {
         }
     }
 
+    public char[] subCharArray(int start, int end) {
+        if (start == end)
+            return new char[]{};
+        int len = end - start;
+        return new char[0];
+    }
+
     @Override
     public int length() {
         return length;
