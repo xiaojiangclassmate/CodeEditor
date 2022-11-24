@@ -68,6 +68,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         if (e.getX() + mOverScroller.getCurrX() > columnOffset) {
             column = contentLine.length();
         }
+
         mEditor.getContent().setCursorPos(line, column);
         mEditor.invalidate();
         return true;

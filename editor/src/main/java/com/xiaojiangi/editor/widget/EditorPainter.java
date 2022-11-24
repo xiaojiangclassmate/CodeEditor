@@ -3,8 +3,6 @@ package com.xiaojiangi.editor.widget;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.xiaojiangi.editor.text.Text;
@@ -53,7 +51,6 @@ public class EditorPainter {
          行号背景偏移量
          */
         lineNumberBackgroundOffset = lineNumberOffset + (8 * dpUnit);
-
         /*
           行文本偏移量
          */

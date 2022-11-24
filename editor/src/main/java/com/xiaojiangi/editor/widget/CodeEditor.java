@@ -216,7 +216,6 @@ public class CodeEditor extends View {
     public int getViewMaxX() {
         return (int) Math.max(0, mEditorPainter.getOffset() + mEditorPainter.measureTextWidth(mText.max().toCharArray()) - (getWidth() / 2f));
     }
-
     public int getViewMaxY() {
         return (int) Math.max(0, (mEditorPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
     }
