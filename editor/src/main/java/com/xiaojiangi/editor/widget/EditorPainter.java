@@ -3,7 +3,7 @@ package com.xiaojiangi.editor.widget;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.widget.OverScroller;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -14,7 +14,6 @@ import com.xiaojiangi.editor.theme.EditorColorTheme;
 public class EditorPainter {
     private final CodeEditor mEditor;
     private AbstractColorTheme mEditorColorTheme;
-    private final OverScroller mOverScroller;
     private final Paint mPaint;
     private final Paint mNumberPaint;
     private final Paint mOtherPaint;
@@ -22,11 +21,13 @@ public class EditorPainter {
     private final float dpUnit;
     private int tabCount;
     private float tabWidth;
-    private float offset;
+    /**
+     * 行号背景偏移量
+     */
+    private float lineNumberBackgroundOffset;
 
     public EditorPainter(CodeEditor codeEditor) {
         this.mEditor = codeEditor;
-        mOverScroller = mEditor.getOverScroller();
         mPaint = new Paint();
         mOtherPaint = new Paint();
         mNumberPaint = new Paint();
@@ -38,6 +39,7 @@ public class EditorPainter {
     }
 
     protected void onDraw(Canvas canvas) {
+
         var mText = mEditor.getContent();
         int visibleLineStart = Math.max((int) (mEditor.getOverScroller().getCurrY() / getLineHeight()), 0);
         int visibleLineEnd = Math.min(mText.size(), (int) ((mEditor.getHeight() + mEditor.getOverScroller().getCurrY()) / getLineHeight() + 1));
@@ -50,8 +52,8 @@ public class EditorPainter {
         /*
          行号背景偏移量
          */
-        float lineNumberBackgroundOffset = lineNumberOffset + (8 * dpUnit);
-        offset = lineNumberBackgroundOffset;
+        lineNumberBackgroundOffset = lineNumberOffset + (8 * dpUnit);
+
         /*
           行文本偏移量
          */
@@ -63,7 +65,6 @@ public class EditorPainter {
         float start = visibleLineStart * getLineHeight();
         float end = visibleLineEnd * getLineHeight();
 
-        //补全行号绘制部分
         if (visibleLineEnd == mText.size())
             end += canvas.getHeight();
 
@@ -76,19 +77,18 @@ public class EditorPainter {
 
     /**
      * 绘制行号和文本内容
-     *
-     * @param lineStart    绘制的第一行
-     * @param lineEnd      绘制的最后一行
-     * @param numberOffset 行号偏移量
-     * @param textOffset   文本偏移量
-     * @param canvas       画布
+     * @param visibleLineStart 绘制的第一行
+     * @param visibleLineEnd   绘制的最后一行
+     * @param numberOffset     行号偏移量
+     * @param textOffset       文本偏移量
+     * @param canvas           画布
      */
-    protected void drawLineNumberAndText(int lineStart, int lineEnd, float numberOffset, float textOffset, Canvas canvas) {
+    protected void drawLineNumberAndText(int visibleLineStart, int visibleLineEnd, float numberOffset, float textOffset, Canvas canvas) {
         mNumberPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.LINE_NUMBER));
         mNumberPaint.setTextAlign(Paint.Align.RIGHT);
         mPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.TEXT_COLOR));
         mPaint.setTextAlign(Paint.Align.LEFT);
-        for (int i = lineStart; i < lineEnd; i++) {
+        for (int i = visibleLineStart; i < visibleLineEnd; i++) {
             /* 当前行文本基线 */
             var textBaseLine = (getLineHeight() * i) - mPaint.ascent();
 
@@ -130,29 +130,27 @@ public class EditorPainter {
     /**
      * 绘制行号背景
      *
-     * @param top    开始位置
-     * @param bottom 结束位置
-     * @param offset 偏移
+     * @param lineTopX    开始位置的X轴
+     * @param lineBottomX 结束位置的X轴
+     * @param offset      行号背景偏移量
      */
-    protected void drawLineNumberBackground(float top, float bottom, float offset, Canvas canvas) {
-        if (mEditor.isFixedLineNumber())
-            mOtherPaint.setAlpha(255);
+    protected void drawLineNumberBackground(float lineTopX, float lineBottomX, float offset, Canvas canvas) {
         mOtherPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.LINE_NUMBER_BACKGROUND));
         mOtherPaint.setTextAlign(Paint.Align.LEFT);
-        canvas.drawRect(0f, top, offset, bottom, mOtherPaint);
+        canvas.drawRect(0f, lineTopX, offset, lineBottomX, mOtherPaint);
     }
 
     /**
      * 绘制行号线
      *
-     * @param lineTopY    开始位置
-     * @param lineBottomY 结束位置
-     * @param offset      偏移
+     * @param lineTopX    开始位置的X轴
+     * @param lineBottomX 结束位置的X轴
+     * @param offset      行号背景偏移量
      */
-    protected void drawLineNumberLine(float lineTopY, float lineBottomY, float offset, Canvas canvas) {
+    protected void drawLineNumberLine(float lineTopX, float lineBottomX, float offset, Canvas canvas) {
         mOtherPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.LINE_COLOR));
         mOtherPaint.setStrokeWidth(2);
-        canvas.drawLine(offset, lineTopY, offset, lineBottomY, mOtherPaint);
+        canvas.drawLine(offset, lineTopX, offset, lineBottomX, mOtherPaint);
     }
 
     /**
@@ -164,6 +162,7 @@ public class EditorPainter {
 
     /**
      * 设置控件主题样式
+     *
      * @param colorTheme 主题
      */
     protected void setColorTheme(@NonNull AbstractColorTheme colorTheme) {
@@ -173,6 +172,7 @@ public class EditorPainter {
 
     /**
      * 设置字体样式
+     *
      * @param typeface 字体样式
      */
     protected void setTextTypeface(@NonNull Typeface typeface) {
@@ -182,6 +182,7 @@ public class EditorPainter {
 
     /**
      * 设置字体大小
+     *
      * @param size 字体大小
      */
     public void setTextSize(float size) {
@@ -190,7 +191,9 @@ public class EditorPainter {
     }
 
     /**
-     * @see #setTabWidth(int)
+     * 返回制表符宽度
+     *
+     * @return 制表符宽度
      */
     protected float getTabWidth() {
         return tabWidth;
@@ -198,6 +201,7 @@ public class EditorPainter {
 
     /**
      * 设置制表符宽度
+     *
      * @param tabSpaceCount 制表符空格数量
      */
     protected void setTabWidth(int tabSpaceCount) {
@@ -206,15 +210,18 @@ public class EditorPainter {
     }
 
     /**
-     * @return 得到制表符空格的数量
+     * 返回制表符空格的数量
+     *
+     * @return 空格数量
      */
     protected float getTabCount() {
         return tabCount;
     }
 
     /**
-     * @see #setSpaceWidth()
      * 返回空格的宽度
+     *
+     * @return 空格宽度
      */
     protected float getSpaceWidth() {
         return spaceLength;
@@ -225,7 +232,8 @@ public class EditorPainter {
     }
 
     /**
-     * 得到行的高度
+     * 返回行的高度
+     *
      * @return 行高
      */
     protected float getLineHeight() {
@@ -246,27 +254,7 @@ public class EditorPainter {
      * @return 偏移量
      */
     protected float getOffset() {
-        return offset;
+        return lineNumberBackgroundOffset;
     }
 
-
-    /**
-     * 获取可视行的第一行
-     *
-     * @return 可视行首行
-     */
-    protected int getVisibleLineStart() {
-        return Math.max((int) (mEditor.getOverScroller().getCurrY() / getLineHeight()), 0);
-
-    }
-
-    /**
-     * 获取可视行的最后一行
-     *
-     * @return 可视行尾行
-     */
-    protected int getVisibleLineEnd() {
-        return Math.min(mEditor.getContent().size(), (int) ((mEditor.getHeight() + mEditor.getOverScroller().getCurrY()) / getLineHeight() + 1));
-
-    }
 }

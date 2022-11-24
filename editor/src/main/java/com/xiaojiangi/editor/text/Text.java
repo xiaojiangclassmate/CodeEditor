@@ -12,6 +12,7 @@ import java.util.List;
 public class Text {
     private List<TextLine> mList;
     private final TextUndoManager mUndoManager;
+    private final Cursor mCursor;
     private TextLine maxTextLine;
     public Text() {
         this(null);
@@ -23,6 +24,7 @@ public class Text {
         mList = new ArrayList<>();
         mUndoManager = new TextUndoManager();
         maxTextLine = new TextLine();
+        mCursor = new Cursor(this);
         mList.add(maxTextLine);
         insert(0, 0, text);
     }
@@ -85,6 +87,38 @@ public class Text {
 
     public int size() {
         return mList.size();
+    }
+
+    public Cursor getCursor() {
+        return mCursor;
+    }
+
+    public int getCursorLine() {
+        return mCursor.line;
+    }
+
+    public int getCursorColumn() {
+        return mCursor.column;
+    }
+
+    public void setCursorPos(int line, int column) {
+        mCursor.set(line, column);
+    }
+
+    public void cursorMoveToLeft() {
+        mCursor.moveToLeft();
+    }
+
+    public void cursorMoveToRight() {
+        mCursor.moveToRight();
+    }
+
+    public void cursorMoveToTop() {
+        mCursor.moveToTop();
+    }
+
+    public void cursorMoveToBottom() {
+        mCursor.moveToBottom();
     }
 
     private void checkTextLine(int line) {
