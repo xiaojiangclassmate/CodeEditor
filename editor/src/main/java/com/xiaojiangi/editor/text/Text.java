@@ -2,6 +2,8 @@ package com.xiaojiangi.editor.text;
 
 
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -26,13 +28,14 @@ public class Text {
         maxTextLine = new TextLine();
         mCursor = new Cursor(this);
         mList.add(maxTextLine);
-        insert(0, 0, text);
+        insert(text);
     }
 
     public Text insert(int line, int column, CharSequence text) {
         checkTextLineAndColumn(line, column);
         var current = mList.get(line);
         var linkedList = new LinkedList<TextLine>();
+        int workLine = line;
         int index = 0;
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -42,15 +45,19 @@ public class Text {
                 linkedList.add(current);
                 column = 0;
                 index = i;
+                workLine++;
             }
         }
         if (index != text.length()) {
-            current.insert(column, text.subSequence(index, text.length()));
+            var sub = text.subSequence(index, text.length());
+            current.insert(column, sub);
+            column += sub.length();
         }
         if (linkedList.size() != 0) {
             mList.addAll(line + 1, linkedList);
         }
         setMaxTextLine(null);
+        mCursor.set(workLine, column);
         return this;
     }
 
@@ -119,6 +126,30 @@ public class Text {
 
     public void cursorMoveToBottom() {
         mCursor.moveToBottom();
+    }
+
+    private Text insert(CharSequence text) {
+        checkTextLineAndColumn(0, 0);
+        var current = mList.get(0);
+        var linkedList = new LinkedList<TextLine>();
+        int index = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\n') {
+                current.insert(0, text.subSequence(index, i));
+                current = new TextLine();
+                linkedList.add(current);
+                index = i;
+            }
+        }
+        if (index != text.length()) {
+            current.insert(0, text.subSequence(index, text.length()));
+        }
+        if (linkedList.size() != 0) {
+            mList.addAll(1, linkedList);
+        }
+        setMaxTextLine(null);
+        return this;
     }
 
     private void checkTextLine(int line) {

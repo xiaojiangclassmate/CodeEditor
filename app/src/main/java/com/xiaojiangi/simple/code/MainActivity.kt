@@ -1,14 +1,15 @@
 package com.xiaojiangi.simple.code
 
+import android.content.DialogInterface
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.ContextMenu
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.xiaojiangi.simple.code.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -39,13 +40,24 @@ class MainActivity : AppCompatActivity() {
                 )
             )
 
-            R.id.editor_print -> Log.d("Editor", _binding.editor.text.toString())
+            R.id.editor_font_size -> {
+                val view = View.inflate(this, R.layout.dialog_font_size, null)
+
+                MaterialAlertDialogBuilder(this).setView(view).setTitle("字体大小")
+                    .setNegativeButton(
+                        "确定"
+                    ) { _, _ ->
+                        val size: Float =
+                            (view.findViewById<EditText>(R.id.editTextText).text.toString()).toFloat()
+                        _binding.editor.textSize = size
+                    }.setNeutralButton("取消", null).show()
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main, menu)
+        menuInflater.inflate(R.menu.options, menu)
         return true
     }
 }
