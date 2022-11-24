@@ -8,6 +8,7 @@ import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -34,15 +35,15 @@ public class CodeEditor extends View {
 
     private boolean enableEdit;
     private int mTabSpaceCount;
+    private float mTextSize;
+    private float mDpUnit;
+    private Text mText;
     private EditorInputConnection mEditorInputConnect;
     private InputMethodManager mInputMethodManager;
     private AbstractColorTheme mColorTheme;
     private EditorTouchEventHandler mEditorTouchEventHandler;
     private EditorPainter mEditorPainter;
     private OverScroller mOverScroller;
-    private Text mText;
-    private float mTextSize;
-    private float mDpUnit;
     private GestureDetector mGestureDetector;
 
     public CodeEditor(Context context) {
@@ -67,7 +68,6 @@ public class CodeEditor extends View {
         setFocusableInTouchMode(true);
         setEnableEdit(true);
         mDpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, Resources.getSystem().getDisplayMetrics()) / 10F;
-
         mEditorInputConnect = new EditorInputConnection(this);
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         mOverScroller = new OverScroller(getContext());
@@ -115,10 +115,41 @@ public class CodeEditor extends View {
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_HOME:
+                break;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                mText.cursorMoveToLeft();
+                break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                mText.cursorMoveToRight();
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                mText.cursorMoveToTop();
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                mText.cursorMoveToBottom();
+                break;
+        }
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DEL:
+                deleteText();
+                break;
+            case KeyEvent.KEYCODE_ENTER:
+                insertText("\n");
+                break;
+
+        }
+        invalidate();
+        return true;
+
+    }
+
+    @Override
     public boolean onCheckIsTextEditor() {
         return isEnableEdit();
     }
-
 
     public void showSoftInput() {
         if (!isEnableEdit())
@@ -161,6 +192,15 @@ public class CodeEditor extends View {
             mText.redo();
         }
         invalidate();
+    }
+
+    protected void insertText(CharSequence text) {
+        mText.insert(mText.getCursorLine(), mText.getCursorColumn(), text);
+        invalidate();
+    }
+
+    protected void deleteText() {
+
     }
 
     public boolean isEnableEdit() {
@@ -209,14 +249,15 @@ public class CodeEditor extends View {
         invalidate();
     }
 
-    public OverScroller getOverScroller() {
+    protected OverScroller getOverScroller() {
         return mOverScroller;
     }
 
-    public int getViewMaxX() {
+    protected int getViewMaxX() {
         return (int) Math.max(0, mEditorPainter.getOffset() + mEditorPainter.measureTextWidth(mText.max().toCharArray()) - (getWidth() / 2f));
     }
-    public int getViewMaxY() {
+
+    protected int getViewMaxY() {
         return (int) Math.max(0, (mEditorPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
     }
 
@@ -228,7 +269,7 @@ public class CodeEditor extends View {
         return mDpUnit;
     }
 
-    public EditorPainter getEditorPainter() {
+    protected EditorPainter getEditorPainter() {
         return mEditorPainter;
     }
 }

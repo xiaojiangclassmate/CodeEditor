@@ -1,7 +1,7 @@
 package com.xiaojiangi.editor.text;
 
 public final class Cursor {
-    private final Text text;
+    private final Text mText;
     /**
      * 光标所在的行
      */
@@ -12,7 +12,7 @@ public final class Cursor {
     public int column;
 
     public Cursor(Text text) {
-        this.text = text;
+        mText = text;
         line = column = 0;
     }
 
@@ -33,8 +33,13 @@ public final class Cursor {
      * 光标左移一个字符
      */
     public void moveToLeft() {
-        if (column == 0)
+        if (line == 0 && column == 0)
             return;
+        if (line != 0 && column == 0) {
+            line--;
+            column = mText.get(line).length();
+            return;
+        }
         column--;
     }
 
@@ -42,8 +47,13 @@ public final class Cursor {
      * 光标右移一个字符
      */
     public void moveToRight() {
-        if (column == text.get(line).length())
+        if (column == mText.get(line).length()) {
+            if (line + 1 == mText.size())
+                return;
+            line++;
+            column = 0;
             return;
+        }
         column++;
     }
 
@@ -53,9 +63,8 @@ public final class Cursor {
     public void moveToTop() {
         if (line == 0)
             return;
-
         line--;
-        int length = text.get(line).length();
+        int length = mText.get(line).length();
         if (length < column)
             column = length;
     }
@@ -64,11 +73,10 @@ public final class Cursor {
      * 光标往下移动一行
      */
     public void moveToBottom() {
-        if (text.size() == line + 1)
+        if (mText.size() == line + 1)
             return;
-
         line++;
-        int length = text.get(line).length();
+        int length = mText.get(line).length();
         if (length < column)
             column = length;
 
