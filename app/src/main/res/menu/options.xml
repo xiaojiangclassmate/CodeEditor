@@ -14,11 +14,20 @@
     <item android:title="操作">
         <menu>
             <item
+                android:id="@+id/editor_fixed_line"
+                android:checkable="true"
+                android:checked="false"
+                android:title="固定行号" />
+            <item
+                android:id="@+id/editor_jump_line"
+                android:title="跳转行" />
+            <item
                 android:id="@+id/editor_font_size"
                 android:title="字体大小" />
             <item
                 android:id="@+id/editor_clear"
                 android:title="清空" />
+
         </menu>
     </item>
     <item
