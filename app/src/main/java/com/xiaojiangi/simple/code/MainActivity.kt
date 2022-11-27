@@ -1,10 +1,8 @@
 package com.xiaojiangi.simple.code
 
-import android.content.DialogInterface
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -41,16 +39,29 @@ class MainActivity : AppCompatActivity() {
             )
 
             R.id.editor_font_size -> {
-                val view = View.inflate(this, R.layout.dialog_font_size, null)
+                val view = View.inflate(this, R.layout.dialog_edit_text, null)
 
                 MaterialAlertDialogBuilder(this).setView(view).setTitle("字体大小")
-                    .setNegativeButton(
-                        "确定"
-                    ) { _, _ ->
+                    .setNegativeButton("确定") { _, _ ->
                         val size: Float =
                             (view.findViewById<EditText>(R.id.editTextText).text.toString()).toFloat()
                         _binding.editor.textSize = size
                     }.setNeutralButton("取消", null).show()
+            }
+
+            R.id.editor_jump_line -> {
+                val view = View.inflate(this, R.layout.dialog_edit_text, null)
+                MaterialAlertDialogBuilder(this).setView(view).setTitle("跳转行")
+                    .setNegativeButton("确定") { _, _ ->
+                        _binding.editor.jumpToLine(
+                            (view.findViewById<EditText>(R.id.editTextText).text.toString().toInt())
+                        )
+                    }.setNeutralButton("取消", null).show()
+            }
+
+            R.id.editor_fixed_line -> {
+                _binding.editor.isFixedLineNumber = !_binding.editor.isFixedLineNumber
+                item.isChecked = _binding.editor.isFixedLineNumber
             }
         }
         return super.onOptionsItemSelected(item)

@@ -1,7 +1,6 @@
 package com.xiaojiangi.editor.widget;
 
 import android.view.GestureDetector;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.OverScroller;
 
@@ -79,13 +78,13 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
     public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
         int dx = (int) distanceX;
         int dy = (int) distanceY;
-        if (mOverScroller.getCurrX() + distanceX > mEditor.getViewMaxX()) {
-            dx = mEditor.getViewMaxX() - mOverScroller.getCurrX();
+        if (mOverScroller.getCurrX() + distanceX > mEditor.getScrollMaxX()) {
+            dx = mEditor.getScrollMaxX() - mOverScroller.getCurrX();
         } else if (mOverScroller.getCurrX() + distanceX < 0) {
             dx = 0;
         }
-        if (mOverScroller.getCurrY() + distanceY > mEditor.getViewMaxY()) {
-            dy = mEditor.getViewMaxY() - mOverScroller.getCurrY();
+        if (mOverScroller.getCurrY() + distanceY > mEditor.getScrollMaxY()) {
+            dy = mEditor.getScrollMaxY() - mOverScroller.getCurrY();
         } else if (mOverScroller.getCurrY() + distanceY < 0) {
             dy = 0;
         }
@@ -104,7 +103,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
         mOverScroller.forceFinished(true);
         mOverScroller.fling(mEditor.getScrollX(), mEditor.getScrollY(),
                 -(int) velocityX, -(int) velocityY,
-                0, mEditor.getViewMaxX(), 0, mEditor.getViewMaxY());
+                0, mEditor.getScrollMaxX(), 0, mEditor.getScrollMaxY());
 
         mEditor.invalidate();
         return true;
