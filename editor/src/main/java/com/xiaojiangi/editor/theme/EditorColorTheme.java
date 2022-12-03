@@ -11,7 +11,7 @@ public class EditorColorTheme extends AbstractColorTheme {
             case LINE_NUMBER -> 0xffb2acad;
             case LINE_NUMBER_BACKGROUND -> 0xfff2f2f2;
             case CODE_BACKGROUND -> 0xffffffff;
-            case CURRENT_LINE_BACKGROUND -> 0xfffcfaed;
+            case CURRENT_LINE_BACKGROUND -> 0xfffcfae3;
             case LINE_COLOR -> 0xffd4d4d4;
             case CURSOR_COLOR -> 0xff000000;
             case TEXT_COLOR -> 0xff070712;

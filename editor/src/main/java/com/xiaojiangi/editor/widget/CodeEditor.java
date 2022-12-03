@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -135,13 +136,8 @@ public class CodeEditor extends View {
                 break;
         }
         switch (keyCode) {
-            case KeyEvent.KEYCODE_DEL:
-                deleteText();
-                break;
-            case KeyEvent.KEYCODE_ENTER:
-                insertText("\n");
-                break;
-
+            case KeyEvent.KEYCODE_DEL -> deleteText();
+            case KeyEvent.KEYCODE_ENTER -> insertText("\n");
         }
         invalidate();
         return true;
@@ -178,7 +174,7 @@ public class CodeEditor extends View {
 
     public void setText(@Nullable CharSequence text) {
         mText = new Text(text);
-        mOverScroller.startScroll(0, 0, 0, 0, 0);
+        restart();
         invalidate();
     }
 
@@ -205,10 +201,16 @@ public class CodeEditor extends View {
 
     }
 
+    /**
+     * @see #setEnableEdit(boolean)
+     */
     public boolean isEnableEdit() {
         return enableEdit;
     }
 
+    /**
+     * 设置 CodeEditor是否可以编辑
+     */
     public void setEnableEdit(boolean enableEdit) {
         this.enableEdit = enableEdit;
         invalidate();
@@ -224,7 +226,6 @@ public class CodeEditor extends View {
     /**
      * 设置CodeEditor的颜色样式
      *
-     * @param theme 颜色主题
      */
     public <T extends AbstractColorTheme> void setColorTheme(@NonNull T theme) {
         this.mColorTheme = theme;
@@ -338,6 +339,8 @@ public class CodeEditor extends View {
     protected EditorPainter getEditorPainter() {
         return mEditorPainter;
     }
-
+    private void restart(){
+        mOverScroller.startScroll(0, 0, 0, 0, 0);
+    }
 
 }

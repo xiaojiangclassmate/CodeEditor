@@ -63,42 +63,76 @@ public class EditorPainter {
         float start = visibleLineStart * getLineHeight();
         float end = visibleLineEnd * getLineHeight();
 
-        //补全行号绘制部分
-        if (visibleLineEnd == mText.size())
-            end += canvas.getHeight();
-
-        drawLineNumberBackground(start, end, lineNumberBackgroundOffset, canvas);
-        drawCursorLine(visibleLineStart, visibleLineEnd, lineTextOffset, mText, canvas);
-        drawLineNumberLine(start, end, lineNumberBackgroundOffset, canvas);
-        drawLineNumberAndText(visibleLineStart, visibleLineEnd, lineNumberOffset, lineTextOffset, canvas);
-
-    }
-
-    /**
-     * 绘制行号和文本内容
-     *
-     * @param lineStart    绘制的第一行
-     * @param lineEnd      绘制的最后一行
-     * @param numberOffset 行号偏移量
-     * @param textOffset   文本偏移量
-     * @param canvas       画布
-     */
-    protected void drawLineNumberAndText(int lineStart, int lineEnd, float numberOffset, float textOffset, Canvas canvas) {
         mNumberPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.LINE_NUMBER));
         mNumberPaint.setTextAlign(Paint.Align.RIGHT);
         mPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.TEXT_COLOR));
         mPaint.setTextAlign(Paint.Align.LEFT);
-        for (int i = lineStart; i < lineEnd; i++) {
-            /* 当前行文本基线 */
-            var textBaseLine = (getLineHeight() * i) - mPaint.ascent();
 
-            canvas.drawText(String.valueOf(i + 1), numberOffset, textBaseLine, mNumberPaint);
-            var current = mEditor.getContent().get(i).toCharArray();
-            canvas.drawText(current, 0, current.length, textOffset, textBaseLine, mPaint);
+        //补全行号绘制部分
+        if (visibleLineEnd == mText.size())
+            end += canvas.getHeight();
+        //是否开启固定行号
+        if (mEditor.isFixedLineNumber()){
+            lineNumberBackgroundOffset+=mOverScroller.getCurrX();
+            lineNumberOffset+=mOverScroller.getCurrX();
+            drawCursorLine(visibleLineStart, visibleLineEnd, lineTextOffset, mText, canvas);
+            for (int i = visibleLineStart; i < visibleLineEnd; i++) {
+                float textBaseLine = (getLineHeight() * i) - mPaint.ascent();
+                drawLineText(i,textBaseLine,lineTextOffset,canvas);
+                drawLineNumberBackground(i,lineNumberBackgroundOffset,canvas);
+                if (i==mText.getCursorLine()){
+                    drawLineNumberCursorBackground(i,lineNumberBackgroundOffset,canvas);
+                }
+                drawLineNumber(i,textBaseLine,lineNumberOffset,canvas);
+
+            }
+            drawLineNumberLine(start, end, lineNumberBackgroundOffset, canvas);
+        }else {
+            drawLineNumberBackgrounds(start, end, lineNumberBackgroundOffset, canvas);
+            drawCursorLine(visibleLineStart, visibleLineEnd, lineTextOffset, mText, canvas);
+            drawLineNumberLine(start, end, lineNumberBackgroundOffset, canvas);
+            for (int i = visibleLineStart; i < visibleLineEnd; i++) {
+                float textBaseLine = (getLineHeight() * i) - mPaint.ascent();
+                drawLineNumber(i,textBaseLine,lineNumberOffset,canvas);
+                drawLineText(i,textBaseLine,lineTextOffset,canvas);
+            }
+
         }
+
     }
 
+    /**
+     * 绘制当前行行号
+     * @param currentLine 当前行
+     * @param textBaseLine 文本基线
+     * @param numberOffset 数字偏移量
+     * @param canvas 画布
+     */
+    protected void drawLineNumber(int currentLine,float textBaseLine,float numberOffset,Canvas canvas){
+        canvas.drawText(String.valueOf(currentLine + 1), numberOffset, textBaseLine, mNumberPaint);
+    }
+    /**
+     * 绘制当行文本
+     * @param currentLine 当前行
+     * @param textBaseText 文本基线
+     * @param textOffset 文本偏移量
+     * @param canvas 画布
+     */
+    protected void drawLineText(int currentLine,float textBaseText,  float textOffset, Canvas canvas){
+        var current = mEditor.getContent().get(currentLine).toCharArray();
+        canvas.drawText(current, 0, current.length, textOffset, textBaseText, mPaint);
+    }
+
+    /**
+     * 绘制光标所在的行
+     * @param visibleLineStart 可是行首
+     * @param visibleLineEnd 可视行尾
+     * @param textOffset 绘制文本的偏移量
+     * @param text Text
+     * @param canvas 画布
+     */
     protected void drawCursorLine(int visibleLineStart, int visibleLineEnd, float textOffset, Text text, Canvas canvas) {
+        //判断光标是否在可视行中
         if (!(visibleLineStart <= text.getCursorLine() && text.getCursorLine() <= visibleLineEnd)) {
             return;
         }
@@ -113,34 +147,54 @@ public class EditorPainter {
 
     protected void drawCursor(int cursorLine, int cursorColumn, float textOffset, Text text, Canvas canvas) {
         int tab = 0;
-        float tabOffset = measureTextWidth(new char[]{'\t'});
+        float tabOffset = measureTextWidth('\t');
         for (int i = 0; i < cursorColumn; i++) {
-            if (text.get(cursorLine).charAt(i) == '\t')
+            if (text.get(cursorLine).charAt(i) == '\t') {
                 tab++;
+            }
         }
         float offset = (tab * tabWidth) - (tab * tabOffset);
         offset += textOffset + measureTextWidth(text.get(cursorLine).subSequence(0, cursorColumn).toCharArray());
         mOtherPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.CURSOR_COLOR));
-        mOtherPaint.setStrokeWidth(4.6f);
+        mOtherPaint.setStrokeWidth(4f);
         mOtherPaint.setTextAlign(Paint.Align.CENTER);
         canvas.drawLine(offset, cursorLine * getLineHeight(), offset, (cursorLine + 1) * getLineHeight(), mOtherPaint);
 
     }
 
     /**
-     * 绘制行号背景
+     * 绘制可视行号背景
      *
      * @param top    开始位置
      * @param bottom 结束位置
      * @param offset 偏移
      */
-    protected void drawLineNumberBackground(float top, float bottom, float offset, Canvas canvas) {
-        if (mEditor.isFixedLineNumber())
-            mOtherPaint.setAlpha(255);
+    protected void drawLineNumberBackgrounds(float top, float bottom, float offset, Canvas canvas) {
         mOtherPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.LINE_NUMBER_BACKGROUND));
         mOtherPaint.setTextAlign(Paint.Align.LEFT);
         canvas.drawRect(0f, top, offset, bottom, mOtherPaint);
     }
+
+    /**
+     * 绘制单行行号背景
+     * @param current 当前行
+     * @param offset 偏移量
+     * @param canvas 画布
+     */
+    protected void drawLineNumberBackground(int current,float offset,Canvas canvas){
+        mOtherPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.LINE_NUMBER_BACKGROUND));
+        mOtherPaint.setTextAlign(Paint.Align.LEFT);
+        float pos =getLineHeight()*current;
+        canvas.drawRect(0f, pos, offset, pos+getLineHeight(), mOtherPaint);
+    }
+    protected void drawLineNumberCursorBackground(int current,float offset,Canvas canvas){
+        mOtherPaint.setColor(mEditorColorTheme.getColor(EditorColorTheme.CURRENT_LINE_BACKGROUND));
+        mOtherPaint.setTextAlign(Paint.Align.LEFT);
+        float pos =getLineHeight()*current;
+        canvas.drawRect(0f, pos, offset, pos+getLineHeight(), mOtherPaint);
+    }
+
+
 
     /**
      * 绘制行号线
