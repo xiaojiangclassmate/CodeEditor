@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(_binding.root)
         setSupportActionBar(_binding.toolbar)
-        _binding.editor.setTextTypeface(Typeface.createFromAsset(assets, "JetbrainsMon.ttf"))
+        _binding.editor.setTextTypeface(Typeface.createFromAsset(assets, "JetbrainsMono.ttf"))
         _binding.editor.setText(String(assets.open("CodeEditor.java").readBytes()))
     }
 
@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                 item.isChecked = _binding.editor.isFixedLineNumber
             }
             R.id.editor_font_style_jetbrains_mono ->{
-                _binding.editor.setTextTypeface(Typeface.createFromAsset(assets, "JetbrainsMon.ttf"))
+                _binding.editor.setTextTypeface(Typeface.createFromAsset(assets, "JetbrainsMono.ttf"))
             }
             R.id.editor_font_style_fira_code ->{
                 _binding.editor.setTextTypeface(Typeface.createFromAsset(assets, "FiraCode.ttf"))
