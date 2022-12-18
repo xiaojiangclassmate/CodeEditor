@@ -30,6 +30,16 @@
 
         </menu>
     </item>
+    <item android:title="字体样式">
+        <menu>
+            <item
+                android:title="Fira Code"
+                android:id="@+id/editor_font_style_fira_code"/>
+            <item
+                android:title="Jetbrains Mono"
+                android:id="@+id/editor_font_style_jetbrains_mono"/>
+        </menu>
+    </item>
     <item
         android:title="撤销"
         android:icon="@drawable/ic_undo"

@@ -1,6 +1,7 @@
 package com.xiaojiangi.editor.text;
 
 import android.text.GetChars;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -102,16 +103,29 @@ public class TextLine implements CharSequence {
         return this;
     }
 
-    public TextLine delete(int start, int end) {
+//    public TextLine delete(int start, int end) {
+//        if (start > end || start < 0 || end > length)
+//            throw new ArrayIndexOutOfBoundsException();
+//        if (start == end)
+//            return this;
+//        System.arraycopy(value, end, value, start, value.length - end);
+//        length = length - (end - start);
+//        ensureCapacity(length);
+//        return this;
+//    }
+    public CharSequence delete(int start, int end) {
         if (start > end || start < 0 || end > length)
             throw new ArrayIndexOutOfBoundsException();
         if (start == end)
-            return this;
+            return "";
+        char[] re =new char[end-start];
+        System.arraycopy(value,start,re,0,end-start);
         System.arraycopy(value, end, value, start, value.length - end);
-        length = value.length - (end - start);
+        length = length - (end - start);
         ensureCapacity(length);
-        return this;
+        return String.valueOf(re);
     }
+
 
     public int indexOf(char c) {
         for (int i = 0; i < length; i++) {

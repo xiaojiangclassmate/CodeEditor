@@ -34,18 +34,19 @@ public class EditorPainter {
         mOtherPaint.setAntiAlias(true);
         mNumberPaint.setAntiAlias(true);
         dpUnit = mEditor.getDpUnit();
+//        mPaint.getTextRunCursor()
         setSpaceWidth();
     }
 
     protected void onDraw(Canvas canvas) {
         var mText = mEditor.getContent();
         int visibleLineStart = Math.max((int) (mEditor.getOverScroller().getCurrY() / getLineHeight()), 0);
-        int visibleLineEnd = Math.min(mText.size(), (int) ((mEditor.getHeight() + mEditor.getOverScroller().getCurrY()) / getLineHeight() + 1));
+        int visibleLineEnd = Math.min(mText.getTextLineCount(), (int) ((mEditor.getHeight() + mEditor.getOverScroller().getCurrY()) / getLineHeight() + 1));
 
         /*
           行号偏移量
          */
-        float lineNumberOffset = mPaint.measureText(String.valueOf(mText.size())) + (2 * mEditor.getDpUnit());
+        float lineNumberOffset = mPaint.measureText(String.valueOf(mText.getTextLineCount())) + (2 * mEditor.getDpUnit());
 
         /*
          行号背景偏移量
@@ -69,7 +70,7 @@ public class EditorPainter {
         mPaint.setTextAlign(Paint.Align.LEFT);
 
         //补全行号绘制部分
-        if (visibleLineEnd == mText.size())
+        if (visibleLineEnd == mText.getTextLineCount())
             end += canvas.getHeight();
         //是否开启固定行号
         if (mEditor.isFixedLineNumber()){
@@ -320,7 +321,7 @@ public class EditorPainter {
      * @return 可视行尾行
      */
     protected int getVisibleLineEnd() {
-        return Math.min(mEditor.getContent().size(), (int) ((mEditor.getHeight() + mEditor.getOverScroller().getCurrY()) / getLineHeight() + 1));
+        return Math.min(mEditor.getContent().getTextLineCount(), (int) ((mEditor.getHeight() + mEditor.getOverScroller().getCurrY()) / getLineHeight() + 1));
 
     }
 }

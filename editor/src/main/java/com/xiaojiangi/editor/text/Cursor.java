@@ -48,7 +48,7 @@ public final class Cursor {
      */
     public void moveToRight() {
         if (column == mText.get(line).length()) {
-            if (line + 1 == mText.size())
+            if (line + 1 == mText.getTextLineCount())
                 return;
             line++;
             column = 0;
@@ -73,7 +73,7 @@ public final class Cursor {
      * 光标往下移动一行
      */
     public void moveToBottom() {
-        if (mText.size() == line + 1)
+        if (mText.getTextLineCount() == line + 1)
             return;
         line++;
         int length = mText.get(line).length();

@@ -48,7 +48,7 @@ public class EditorTouchEventHandler implements GestureDetector.OnGestureListene
     public boolean onSingleTapUp(@NonNull MotionEvent e) {
         mEditor.showSoftInput();
         //计算行的位置
-        int line = (int) Math.min(mEditor.getContent().size() - 1, (e.getY() + mOverScroller.getCurrY()) / mEditor.getEditorPainter().getLineHeight());
+        int line = (int) Math.min(mEditor.getContent().getTextLineCount() - 1, (e.getY() + mOverScroller.getCurrY()) / mEditor.getEditorPainter().getLineHeight());
         int column = 0;
         float columnOffset = mEditor.getEditorPainter().getOffset();
         var contentLine = mEditor.getContent().get(line);

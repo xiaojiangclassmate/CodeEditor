@@ -2,16 +2,17 @@ package com.xiaojiangi.editor.text;
 
 
 
+
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Text {
+    public  static final char LINE_BREAK ='\n';
     private List<TextLine> mList;
     private final TextUndoManager mUndoManager;
     private final Cursor mCursor;
@@ -31,46 +32,101 @@ public class Text {
         insert(text);
     }
 
-    public Text insert(int line, int column, CharSequence text) {
+    public Text insertText(int line, int column,@NonNull CharSequence text) {
         checkTextLineAndColumn(line, column);
         var current = mList.get(line);
         var linkedList = new LinkedList<TextLine>();
         int workLine = line;
+        int workColumn =column;
         int index = 0;
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if (c == '\n') {
-                current.insert(column, text.subSequence(index, i));
+            if (c == LINE_BREAK) {
+                current.insert(workColumn, text.subSequence(index, i));
                 current = new TextLine();
                 linkedList.add(current);
-                column = 0;
-                index = i;
+                workColumn = 0;
+                index = i+1;
                 workLine++;
             }
         }
         if (index != text.length()) {
             var sub = text.subSequence(index, text.length());
-            current.insert(column, sub);
-            column += sub.length();
+            current.insert(workColumn, sub);
+            workColumn += sub.length();
+        }
+        if (workLine!=line){
+            var lastLine = get(line);
+            current.append(lastLine.delete(column,lastLine.length()));
         }
         if (linkedList.size() != 0) {
             mList.addAll(line + 1, linkedList);
         }
-        setMaxTextLine(null);
-        mCursor.set(workLine, column);
+        setMaxTextLine();
+        mCursor.set(workLine, workColumn);
+        mUndoManager.insertText(line,column,workLine,workColumn,text);
         return this;
     }
-
-    public Text delete(int startLine, int startColumn, int endLine, int endColumn) {
+    public Text deleteText(int startLine, int startColumn, int endLine, int endColumn,CharSequence text) {
         checkTextLine(startLine);
         checkTextLine(endLine);
         if (startLine == endLine) {
             var textLine = mList.get(startLine);
-            textLine.delete(startColumn, endColumn);
+            mUndoManager.deleteText(startLine,startColumn,endLine,endColumn,textLine.delete(startColumn, endColumn));
+        }else {
+            if (endColumn==0){
+                StringBuilder sb =new StringBuilder();
+                for (int i = startLine; i <=endLine ; i++) {
+                    var textLine =get(i);
+                    if (i ==startLine){
+                        sb.append(textLine.delete(startColumn,textLine.length()));
+                    }else if (i ==endLine) {
+                        sb.append(remove(textLine));
+                    }else {
+                        sb.append(remove(i));
+                    }
+
+                }
+                get(startLine).append(sb);
+                mUndoManager.deleteText(startLine,startColumn,endLine,endColumn,sb);
+            }
         }
+        mCursor.set(startLine,startColumn);
         return this;
     }
 
+    /**
+     * 删除列3前一个字符
+     * @param deleteLine 光标行
+     * @param deleteColumn 光标列
+     */
+    public Text deleteText(int deleteLine, int deleteColumn){
+        int endLine=deleteLine;
+        int endColumn =deleteColumn;
+        if (deleteColumn ==0){
+            if (deleteLine !=0){
+                if (deleteColumn ==get(deleteLine).length()){
+                    TextLine textLine =remove(deleteLine);
+                    TextLine last =get(--deleteLine);
+                    deleteColumn = last.length();
+                    last.append(textLine);
+                    mCursor.set(deleteLine,deleteColumn);
+                    mUndoManager.deleteText(deleteLine,deleteColumn,endLine,endColumn,"\n");
+                }else {
+                    deleteColumn =get(deleteLine-1).length();
+                    get(deleteLine-1).append(get(deleteLine));
+                    remove(deleteLine);
+                    mCursor.set(--deleteLine,deleteColumn);
+                }
+
+            }
+            return this;
+        }
+        var text=get(deleteLine).delete(--deleteColumn,endColumn);
+        mCursor.set(deleteLine,deleteColumn);
+        mUndoManager.deleteText(deleteLine,endColumn-text.length(),endLine,endColumn,text);
+        return this;
+    }
     public TextLine get(int line) {
         checkTextLine(line);
         return mList.get(line);
@@ -85,14 +141,14 @@ public class Text {
     }
 
     public void undo() {
-
+        mUndoManager.undo(this);
     }
 
     public void redo() {
-
+        mUndoManager.redo(this);
     }
 
-    public int size() {
+    public int getTextLineCount() {
         return mList.size();
     }
 
@@ -128,7 +184,7 @@ public class Text {
         mCursor.moveToBottom();
     }
 
-    private Text insert(CharSequence text) {
+    private void insert(@NonNull CharSequence text) {
         checkTextLineAndColumn(0, 0);
         var current = mList.get(0);
         var linkedList = new LinkedList<TextLine>();
@@ -136,10 +192,10 @@ public class Text {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if (c == '\n') {
-                current.insert(0, text.subSequence(index, i));
+                current.insert(0, text.subSequence(index, i-1));
                 current = new TextLine();
                 linkedList.add(current);
-                index = i;
+                index = i+1;
             }
         }
         if (index != text.length()) {
@@ -148,8 +204,7 @@ public class Text {
         if (linkedList.size() != 0) {
             mList.addAll(1, linkedList);
         }
-        setMaxTextLine(null);
-        return this;
+        setMaxTextLine();
     }
 
     private void checkTextLine(int line) {
@@ -164,23 +219,25 @@ public class Text {
             throw new ArrayIndexOutOfBoundsException();
     }
 
-    private TextLine getMaxTextLine() {
+    private void setMaxTextLine() {
         TextLine textLine = get(0);
         for (int i = 0; i < mList.size(); i++) {
             if (textLine.length() < mList.get(i).length())
                 textLine = mList.get(i);
         }
+        maxTextLine =textLine;
+    }
+    private TextLine remove(int index){
+        checkTextLine(index);
+        var current =mList.get(index);
+        mList.remove(current);
+        return current;
+    }
+    private TextLine remove(TextLine textLine){
+        mList.remove(textLine);
         return textLine;
     }
 
-    private void setMaxTextLine(@Nullable TextLine textLine) {
-        if (textLine == null) {
-            maxTextLine = getMaxTextLine();
-            return;
-        }
-        if (textLine.length() > maxTextLine.length())
-            maxTextLine = textLine;
-    }
 
     @NonNull
     @Override
@@ -189,7 +246,7 @@ public class Text {
             return "";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < mList.size(); i++) {
-            sb.append(mList.get(i)).append("\n");
+            sb.append(mList.get(i)).append(LINE_BREAK);
         }
         return sb.toString();
     }

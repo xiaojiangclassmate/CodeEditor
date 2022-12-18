@@ -6,7 +6,6 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -15,7 +14,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.OverScroller;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -59,7 +57,6 @@ public class CodeEditor extends View {
     public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         this(context, attrs, defStyleAttr, 0);
     }
-
     public CodeEditor(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         initView();
@@ -193,12 +190,13 @@ public class CodeEditor extends View {
     }
 
     protected void insertText(CharSequence text) {
-        mText.insert(mText.getCursorLine(), mText.getCursorColumn(), text);
+        mText.insertText(mText.getCursorLine(), mText.getCursorColumn(), text);
         invalidate();
     }
 
     protected void deleteText() {
-
+        mText.deleteText(mText.getCursorLine(),mText.getCursorColumn());
+        invalidate();
     }
 
     /**
@@ -302,7 +300,7 @@ public class CodeEditor extends View {
      * @param lineNumber 行数
      */
     public void jumpToLine(int lineNumber) {
-        if (mText.size() < lineNumber)
+        if (mText.getTextLineCount() < lineNumber)
             return;
         lineNumber--;
         int endY;
@@ -325,7 +323,7 @@ public class CodeEditor extends View {
     }
 
     protected int getScrollMaxY() {
-        return (int) Math.max(0, (mEditorPainter.getLineHeight() * mText.size() - (getHeight() / 2f)));
+        return (int) Math.max(0, (mEditorPainter.getLineHeight() * mText.getTextLineCount() - (getHeight() / 2f)));
     }
 
     protected Text getContent() {
